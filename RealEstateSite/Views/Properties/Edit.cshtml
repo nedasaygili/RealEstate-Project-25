@@ -1,0 +1,394 @@
+﻿@model RealEstateSite.Models.Property
+
+@{
+    ViewData["Title"] = "İlanı Düzenle";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    .photo-container {
+        position: relative;
+        display: inline-block;
+        transition: transform 0.2s;
+    }
+
+        .photo-container:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-container img {
+            width: 100px; /* Fotoğrafları biraz büyüttüm */
+            height: 75px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+    .delete-photo-btn {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: #dc3545; /* Kırmızı renk */
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        /* İkonu tam ortalamak için Flexbox */
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid white;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+
+    .photo-container:hover .delete-photo-btn {
+        display: flex; /* Sadece üzerine gelince göster */
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-success text-white py-3">
+                    <h4 class="mb-0 text-center"><i class="bi bi-house-gear-fill"></i> İlan Bilgilerini Güncelle</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" enctype="multipart/form-data" id="editForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ListingDate" />
+                        <input type="hidden" asp-for="AgentId" />
+                        <input type="hidden" asp-for="ImageUrl" />
+
+                        <h6 class="text-success text-uppercase border-bottom pb-2 mb-3">Temel Bilgiler</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Title" class="form-control" placeholder="Başlık" />
+                                    <label asp-for="Title">İlan Başlığı</label>
+                                    <span asp-validation-for="Title" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Price" type="number" min="0" class="form-control" placeholder="Fiyat" />
+                                    <label asp-for="Price">Fiyat (₺)</label>
+                                    <span asp-validation-for="Price" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted mb-2">Mevcut Fotoğraflar</label>
+
+                            @if (Model.Photos != null && Model.Photos.Count > 0)
+                            {
+                                <div class="d-flex flex-wrap gap-4 mb-3 p-4 border rounded bg-light">
+                                    @foreach (var photo in Model.Photos)
+                                    {
+                                        <div class="photo-container" id="photo-container-@photo.Id">
+                                            <img src="@photo.Url" class="rounded border shadow-sm" />
+                                            <div class="delete-photo-btn" onclick="deletePhoto(@photo.Id)" title="Sil">
+                                                <i class="bi bi-x"></i>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <div class="mb-3 p-3 border rounded bg-light">
+                                    <span class="badge bg-warning text-dark mb-2">Ana Resim</span><br>
+                                    <img src="@Model.ImageUrl" class="rounded border" style="width: 100px; height: 75px; object-fit: cover;" />
+                                </div>
+                            }
+
+                            <label class="form-label fw-bold text-muted mt-2">Yeni Fotoğraf Ekle</label>
+                            <div class="input-group">
+                                <input type="file" name="imageFiles" class="form-control" multiple accept="image/*" />
+                                <span class="input-group-text"><i class="bi bi-images"></i></span>
+                            </div>
+                            <small class="text-muted">Yeni seçilen fotoğraflar mevcutlara eklenecektir.</small>
+                        </div>
+
+                        <h6 class="text-success text-uppercase border-bottom pb-2 mb-3 mt-4">Konum & Kategori</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.ListingType>()"></select>
+                                    <label asp-for="Type">Satılık / Kiralık</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select asp-for="Category" id="categorySelect" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.PropertyCategory>()"></select>
+                                    <label asp-for="Category">Emlak Tipi</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row bg-light p-3 rounded mb-3 border mx-0">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="City" class="form-label fw-bold text-secondary">Şehir</label>
+                                <select asp-for="City" id="citySelect" class="form-select" required>
+                                    <option value="">Seçiniz...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="District" class="form-label fw-bold text-secondary">İlçe</label>
+                                <select asp-for="District" id="districtSelect" class="form-select" required>
+                                    <option value="">Önce Şehir Seçin...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Mahalle</label>
+                                <select id="neighborhoodSelect" class="form-select">
+                                    <option value="">Önce İlçe Seçin...</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-secondary">Sokak / Apt / No (Detay)</label>
+                                <input type="text" id="addressDetailInput" class="form-control" placeholder="Örn: Cumhuriyet Cad. No:5" />
+                            </div>
+                            <input type="hidden" asp-for="Address" id="finalAddressInput" />
+                        </div>
+
+                        <h6 class="text-success text-uppercase border-bottom pb-2 mb-3 mt-4">Teknik Özellikler</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="SquareMeters" type="number" min="0" class="form-control" placeholder="m2" />
+                                    <label asp-for="SquareMeters">Metrekare (m²)</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-floating mb-3">
+                                    <select asp-for="RoomCount" class="form-select">
+                                        <option value="">Seçiniz</option>
+                                        <option value="1+0 (Stüdyo)">1+0 (Stüdyo)</option>
+                                        @{
+                                            for (int i = 1; i <= 10; i++)
+                                            {
+                                                <option value="@i+1">@i+1</option>
+                                            }
+                                        }
+                                        <option value="More than 10">Villa Tipi / 10+</option>
+                                    </select>
+                                    <label asp-for="RoomCount">Oda Sayısı</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="BuildingAge" type="number" min="0" class="form-control" placeholder="Yaş" />
+                                    <label asp-for="BuildingAge">Bina Yaşı</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating mb-3">
+                                    <select asp-for="Heating" class="form-select" asp-items='Html.GetEnumSelectList<RealEstateSite.Models.HeatingType>().Where(x => x.Text != "Air Conditioning")'></select>
+                                    <label asp-for="Heating">Isıtma</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="featuresSection" class="mb-4 mt-2 p-3 bg-light border rounded">
+                            <h6 class="fw-bold text-success mb-3"><i class="bi bi-check-square"></i> Evin Özellikleri</h6>
+                            <div class="row">
+                                @if (ViewBag.Features != null)
+                                {
+                                    var selectedIds = ViewBag.SelectedFeatures as int[] ?? new int[0];
+                                    foreach (var feature in (List<RealEstateSite.Models.Feature>)ViewBag.Features)
+                                    {
+                                        bool isChecked = selectedIds.Contains(feature.Id);
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                       name="selectedFeatureIds"
+                                                       value="@feature.Id"
+                                                       id="f_@feature.Id"
+                                                       @(isChecked ? "checked" : "")>
+                                                <label class="form-check-label" for="f_@feature.Id">@feature.Name</label>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <textarea asp-for="Description" class="form-control" placeholder="Açıklama" style="height: 150px"></textarea>
+                            <label asp-for="Description">İlan Detayları</label>
+                        </div>
+
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" asp-for="IsActive">
+                            <label class="form-check-label" for="IsActive">İlan Yayında (Aktif)</label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                                <i class="bi bi-check-lg"></i> Değişiklikleri Kaydet
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // --- FOTOĞRAF SİLME FONKSİYONU (AJAX) ---
+        function deletePhoto(photoId) {
+            // Confirm uyarısı kaldırıldı, direkt işlem başlıyor
+            $.ajax({
+                url: '/Properties/DeletePhoto/' + photoId,
+                type: 'POST',
+                success: function (result) {
+                    if (result.success) {
+                        // Başarılıysa fotoğrafı yavaşça kaybet ve sil
+                        $('#photo-container-' + photoId).fadeOut(300, function() { $(this).remove(); });
+                    } else {
+                        alert('Hata: ' + result.message);
+                    }
+                },
+                error: function () {
+                    alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            // --- DEĞİŞKENLER ---
+            var allData = [];
+            var $citySelect = $('#citySelect');
+            var $districtSelect = $('#districtSelect');
+            var $neighborhoodSelect = $('#neighborhoodSelect');
+            var currentCity = '@Html.Raw(Model.City)';
+            var currentDistrict = '@Html.Raw(Model.District)';
+            var fullAddress = '@Html.Raw(Model.Address)';
+
+            // --- ADRES PARÇALAMA ---
+            var currentNeighborhood = "";
+            var currentDetail = fullAddress;
+            if (fullAddress && fullAddress.includes(" - ")) {
+                var parts = fullAddress.split(" - ");
+                if(parts.length >= 1) {
+                    currentNeighborhood = parts[0];
+                    currentDetail = fullAddress.substring(fullAddress.indexOf(" - ") + 3);
+                }
+            }
+            $('#addressDetailInput').val(currentDetail);
+
+            // --- JSON YÜKLEME ---
+            $.getJSON('/json/data.json', function (data) {
+                allData = Array.isArray(data) ? data : (data.data || []);
+                $.each(allData, function (index, item) {
+                    $citySelect.append($('<option>', { value: item.name, text: item.name }));
+                });
+
+                if (currentCity) {
+                    $citySelect.val(currentCity);
+                    var cityData = allData.find(x => x.name === currentCity);
+                    if (cityData && cityData.counties) {
+                        $.each(cityData.counties, function (index, county) {
+                            $districtSelect.append($('<option>', { value: county.name, text: county.name }));
+                        });
+                        if (currentDistrict) {
+                            $districtSelect.val(currentDistrict);
+                            var countyData = cityData.counties.find(c => c.name === currentDistrict);
+                            if (countyData && countyData.districts) {
+                                 $.each(countyData.districts, function (i, subDistrict) {
+                                    if (subDistrict.neighborhoods) {
+                                        $.each(subDistrict.neighborhoods, function (j, neighborhood) {
+                                            $neighborhoodSelect.append($('<option>', { value: neighborhood.name, text: neighborhood.name }));
+                                        });
+                                    }
+                                });
+                                if (currentNeighborhood) {
+                                    $neighborhoodSelect.val(currentNeighborhood);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // --- ŞEHİR SEÇİMİ ---
+            $citySelect.change(function () {
+                var selectedCityName = $(this).val();
+                $districtSelect.empty().append('<option value="">Seçiniz...</option>');
+                $neighborhoodSelect.empty().append('<option value="">Önce İlçe Seçin...</option>');
+                if (selectedCityName) {
+                    var cityData = allData.find(x => x.name === selectedCityName);
+                    if (cityData && cityData.counties) {
+                        $.each(cityData.counties, function (index, county) {
+                            $districtSelect.append($('<option>', { value: county.name, text: county.name }));
+                        });
+                    }
+                }
+            });
+
+            // --- İLÇE SEÇİMİ ---
+            $districtSelect.change(function () {
+                var selectedCityName = $citySelect.val();
+                var selectedDistrictName = $(this).val();
+                $neighborhoodSelect.empty().append('<option value="">Seçiniz...</option>');
+                if (selectedCityName && selectedDistrictName) {
+                    var cityData = allData.find(x => x.name === selectedCityName);
+                    if (cityData && cityData.counties) {
+                        var countyData = cityData.counties.find(c => c.name === selectedDistrictName);
+                        if (countyData && countyData.districts) {
+                             $.each(countyData.districts, function (i, subDistrict) {
+                                if (subDistrict.neighborhoods) {
+                                    $.each(subDistrict.neighborhoods, function (j, neighborhood) {
+                                        $neighborhoodSelect.append($('<option>', { value: neighborhood.name, text: neighborhood.name }));
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+
+            // --- ADRES BİRLEŞTİRME ---
+            $('#editForm').submit(function () {
+                var mahalle = $neighborhoodSelect.val() || "";
+                var detay = $('#addressDetailInput').val() || "";
+                var fullAddress = "";
+                if (mahalle) {
+                    fullAddress += mahalle;
+                    if (detay) fullAddress += " - " + detay;
+                } else {
+                    fullAddress = detay;
+                }
+                $('#finalAddressInput').val(fullAddress);
+            });
+
+            // --- KATEGORİ GİZLE/GÖSTER ---
+            function toggleFields() {
+                var selectedText = $("#categorySelect option:selected").text().toLowerCase();
+                if (selectedText.includes("land") || selectedText.includes("arsa") || selectedText.includes("tarla")) {
+                    $("#featuresSection").slideUp();
+                } else {
+                    $("#featuresSection").slideDown();
+                }
+            }
+            $("#categorySelect").change(toggleFields);
+            toggleFields();
+        });
+    </script>
+}

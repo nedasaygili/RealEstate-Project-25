@@ -1,0 +1,284 @@
+﻿@model RealEstateSite.Models.Property
+
+@{
+    ViewData["Title"] = "Add New Listing";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-dark text-white py-3">
+                    <h4 class="mb-0"><i class="fa fa-home me-2"></i>Create New Property Listing</h4>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Create" enctype="multipart/form-data" id="createForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <h6 class="text-primary text-uppercase border-bottom pb-2 mb-4">Basic Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label asp-for="Title" class="form-label fw-bold"></label>
+                                <input asp-for="Title" class="form-control form-control-lg" placeholder="e.g. Ultra Luxury Villa in Center" />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label asp-for="Price" class="form-label fw-bold"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Price" type="number" min="0" class="form-control" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Type" class="form-label fw-bold"></label>
+                                <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.ListingType>()"></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Category" class="form-label fw-bold"></label>
+                                <select asp-for="Category" id="categorySelect" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.PropertyCategory>()"></select>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary text-uppercase border-bottom pb-2 mb-4 mt-5">Location Details</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="City" class="form-label fw-bold">City</label>
+                                <select asp-for="City" id="citySelect" class="form-select">
+                                    <option value="">-- Select City --</option>
+                                </select>
+                                <span asp-validation-for="City" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="District" class="form-label fw-bold">District</label>
+                                <select asp-for="District" id="districtSelect" class="form-select" disabled>
+                                    <option value="">-- Select City First --</option>
+                                </select>
+                                <span asp-validation-for="District" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="Neighborhood" class="form-label fw-bold">Neighborhood</label>
+                                <select asp-for="Neighborhood" id="neighborhoodSelect" class="form-select" disabled>
+                                    <option value="">-- Select District First --</option>
+                                </select>
+                                <span asp-validation-for="Neighborhood" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Street / Apt / No (Details) <span class="text-danger">*</span></label>
+                            <input type="text" id="addressDetailInput" class="form-control" placeholder="e.g. Main St. No:5 Apt:2" required />
+                            <small class="text-muted">System will auto-combine City, District, and Neighborhood.</small>
+                        </div>
+
+                        <input type="hidden" asp-for="Address" id="finalAddressInput" />
+
+                        <h6 class="text-primary text-uppercase border-bottom pb-2 mb-4 mt-5">Technical Specifications</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label asp-for="SquareMeters" class="form-label fw-bold"></label>
+                                <input asp-for="SquareMeters" type="number" min="0" class="form-control" />
+                                <span asp-validation-for="SquareMeters" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-9 row" id="housingDetails">
+                                <div class="col-md-4">
+                                    <label asp-for="RoomCount" class="form-label fw-bold"></label>
+                                    <select asp-for="RoomCount" class="form-select">
+                                        <option value="">-- Select Rooms --</option>
+                                        <option value="1+0 (Studio)">1+0 (Studio)</option>
+                                        @{
+                                            for (int i = 1; i <= 10; i++)
+                                            {
+                                                <option value="@i+1">@i+1</option>
+                                                if (i >= 2)
+                                                {
+                                                    <option value="@i+2">@i+2</option>
+                                                }
+                                            }
+                                        }
+                                        <option value="More than 10">More than 10 / Villa Type</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="BuildingAge" class="form-label fw-bold"></label>
+                                    <input asp-for="BuildingAge" type="number" min="0" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="Heating" class="form-label fw-bold">Heating <span class="text-danger">*</span></label>
+                                    <select asp-for="Heating" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.HeatingType>()" required>
+                                        <option value="">-- Select Heating --</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="featuresSection" class="mb-4 mt-4 p-4 bg-light border rounded">
+                            <h6 class="fw-bold text-primary mb-3">Property Features</h6>
+                            <div class="row">
+                                @if (ViewBag.Features != null)
+                                {
+                                    foreach (var feature in (List<RealEstateSite.Models.Feature>)ViewBag.Features)
+                                    {
+                                        <div class="col-md-4 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="selectedFeatureIds" value="@feature.Id" id="f_@feature.Id">
+                                                <label class="form-check-label" for="f_@feature.Id">@feature.Name</label>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning">
+                                        Features list is empty. Please check Controller ViewBag.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary text-uppercase border-bottom pb-2 mb-4 mt-5">Media & Description</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Property Photos</label>
+                            <input type="file" multiple name="imageFiles" class="form-control" accept="image/*" />
+                            <small class="text-muted">You can select multiple photos at once (Hold CTRL).</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold"></label>
+                            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Detailed property description..."></textarea>
+                        </div>
+
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" asp-for="IsActive" checked>
+                            <label class="form-check-label" for="IsActive">Publish Listing</label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="AgentId" class="form-label fw-bold">Agent</label>
+                            <select asp-for="AgentId" class="form-select" asp-items="ViewBag.AgentId"></select>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-success btn-lg text-uppercase fw-bold shadow">
+                                <i class="fa fa-save"></i> Save Listing
+                            </button>
+                            <a asp-action="Index" class="btn btn-light btn-lg border">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            // --- DEĞİŞKENLER ---
+            var allData = [];
+            var $citySelect = $('#citySelect');
+            var $districtSelect = $('#districtSelect');
+            var $neighborhoodSelect = $('#neighborhoodSelect');
+
+            // --- 1. JSON YÜKLEME ---
+            $.getJSON('/json/data.json', function (data) {
+                // Veri formatını kontrol et
+                allData = Array.isArray(data) ? data : (data.data || []);
+
+                $.each(allData, function (index, item) {
+                    if (item.name) {
+                        $citySelect.append($('<option>', { value: item.name, text: item.name }));
+                    }
+                });
+            }).fail(function() {
+                console.error("JSON file could not be loaded.");
+            });
+
+            // --- 2. ŞEHİR (City) SEÇİLİNCE ---
+            $citySelect.change(function () {
+                var selectedCityName = $(this).val();
+                $districtSelect.empty().append('<option value="">-- Select District --</option>').prop('disabled', true);
+                $neighborhoodSelect.empty().append('<option value="">-- Select Neighborhood --</option>').prop('disabled', true);
+
+                if (selectedCityName) {
+                    var cityData = allData.find(x => x.name === selectedCityName);
+                    if (cityData && cityData.counties) {
+                        $.each(cityData.counties, function (index, county) {
+                            $districtSelect.append($('<option>', { value: county.name, text: county.name }));
+                        });
+                        $districtSelect.prop('disabled', false);
+                    }
+                }
+            });
+
+            // --- 3. İLÇE (District) SEÇİLİNCE ---
+            $districtSelect.change(function () {
+                var selectedCityName = $citySelect.val();
+                var selectedDistrictName = $(this).val();
+                $neighborhoodSelect.empty().append('<option value="">-- Select Neighborhood --</option>').prop('disabled', true);
+
+                if (selectedCityName && selectedDistrictName) {
+                    var cityData = allData.find(x => x.name === selectedCityName);
+                    if (cityData && cityData.counties) {
+                        var countyData = cityData.counties.find(c => c.name === selectedDistrictName);
+                        if (countyData && countyData.districts) {
+                             $.each(countyData.districts, function (i, subDistrict) {
+                                if (subDistrict.neighborhoods) {
+                                    $.each(subDistrict.neighborhoods, function (j, neighborhood) {
+                                        // Neighborhood string veya obje olabilir kontrolü
+                                        var nName = (typeof neighborhood === 'object') ? neighborhood.name : neighborhood;
+                                        $neighborhoodSelect.append($('<option>', { value: nName, text: nName }));
+                                    });
+                                }
+                            });
+                            $neighborhoodSelect.prop('disabled', false);
+                        }
+                    }
+                }
+            });
+
+            // --- 4. FORM SUBMIT (Adres Birleştirme) ---
+            $('#createForm').submit(function () {
+                var mahalle = $neighborhoodSelect.val() || "";
+                var detay = $('#addressDetailInput').val() || "";
+                var fullAddress = "";
+
+                // Mahalleyi seçmiş olsa bile disabled kalırsa post edilmez, garantiye alalım
+                $neighborhoodSelect.prop('disabled', false);
+
+                if (mahalle) fullAddress += mahalle + " ";
+                if (mahalle && detay) fullAddress += "- ";
+                if (detay) fullAddress += detay;
+                $('#finalAddressInput').val(fullAddress);
+            });
+
+            // --- 5. KATEGORİ KONTROLÜ (ARSA GİZLEME) ---
+            function toggleFields() {
+                var selectedText = $("#categorySelect option:selected").text().toLowerCase();
+
+                if (selectedText.includes("land") || selectedText.includes("arsa") || selectedText.includes("tarla")) {
+                    $("#housingDetails").slideUp();
+                    $("#featuresSection").slideUp();
+                } else {
+                    $("#housingDetails").slideDown();
+                    $("#featuresSection").slideDown();
+                }
+            }
+
+            $("#categorySelect").change(toggleFields);
+            toggleFields();
+        });
+    </script>
+}

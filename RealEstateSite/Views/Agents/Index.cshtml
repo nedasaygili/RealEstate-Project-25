@@ -1,0 +1,106 @@
+﻿@model IEnumerable<RealEstateSite.Models.Agent>
+
+@{
+    ViewData["Title"] = "Agents";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold text-dark">Real Estate Agents</h2>
+            <p class="text-muted">Meet our professional team</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="bi bi-person-plus-fill me-2"></i>Add New Agent
+        </a>
+    </div>
+
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            // If Passive: gray out but keep clickable
+            var cardStyle = item.Status ? "" : "background-color: #f8f9fa; opacity: 0.8;";
+            var imageFilter = item.Status ? "" : "filter: grayscale(100%);";
+            var statusBadge = item.Status ? "" : "<span class='badge bg-secondary position-absolute top-0 start-0 m-3'>Inactive (Suspended)</span>";
+
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100 hover-card" style="@cardStyle">
+                    @Html.Raw(statusBadge)
+
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3 position-relative d-inline-block">
+                            @if (!string.IsNullOrEmpty(item.ProfileImageUrl))
+                            {
+                                <img src="@item.ProfileImageUrl" class="rounded-circle shadow-sm" alt="@item.FirstName"
+                                     style="width: 130px; height: 130px; object-fit: cover; border: 4px solid #fff; @imageFilter">
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-light d-inline-flex justify-content-center align-items-center text-secondary display-4"
+                                     style="width: 130px; height: 130px; border: 4px solid #fff; @imageFilter">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            }
+                        </div>
+
+                        <h5 class="card-title fw-bold mb-1">@item.FirstName @item.LastName</h5>
+                        <p class="text-primary small text-uppercase fw-bold mb-4">@item.Title</p>
+
+                        <div class="d-grid gap-2 mb-4">
+                            <span class="text-muted small">@item.Email</span>
+                            <span class="text-muted small">@item.PhoneNumber</span>
+                        </div>
+
+                        <hr class="text-muted my-4" style="opacity: 0.1">
+
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm px-3">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info btn-sm px-3">
+                                Details
+                            </a>
+
+                            @if (item.Id != 1)
+                            {
+                                if (item.Status == true)
+                                {
+                                    // If Active -> Show Suspend (Red)
+                                    <a asp-action="ChangeStatus" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm px-3">
+                                        <i class="bi bi-person-dash"></i> Suspend
+                                    </a>
+                                }
+                                else
+                                {
+                                    // If Inactive -> Show Activate (Green)
+                                    <a asp-action="ChangeStatus" asp-route-id="@item.Id" class="btn btn-success btn-sm px-3">
+                                        <i class="bi bi-person-check"></i> Activate
+                                    </a>
+                                }
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary btn-sm px-3" disabled>
+                                    <i class="bi bi-shield-lock-fill"></i> Admin
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        }
+</style>

@@ -1,0 +1,82 @@
+﻿@model RealEstateSite.Models.Agent
+
+@{
+    ViewData["Title"] = "Add New Agent";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-dark text-white p-4 rounded-top-4">
+                    <h4 class="mb-0 fw-bold"><i class="fa fa-user-plus me-2"></i> Add New Agent (Staff)</h4>
+                </div>
+                <div class="card-body p-5">
+
+                    <form asp-action="Create" enctype="multipart/form-data">
+
+                        <h5 class="text-primary border-bottom pb-2 mb-4">Personal Information</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">First Name</label>
+                                <input asp-for="FirstName" class="form-control" placeholder="John" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Last Name</label>
+                                <input asp-for="LastName" class="form-control" placeholder="Doe" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Title (Position)</label>
+                                <input asp-for="Title" class="form-control" placeholder="e.g. Senior Broker" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="+90 555..." />
+                            </div>
+                        </div>
+
+                        <h5 class="text-success border-bottom pb-2 mb-4">Login Credentials (Important)</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Email (Username)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa fa-envelope"></i></span>
+                                    <input asp-for="Email" type="email" class="form-control" placeholder="agent@unea.com" required />
+                                </div>
+                                <small class="text-danger">* This will be used for login.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                    <input asp-for="Password" type="text" class="form-control" value="123456" />
+                                </div>
+                                <small class="text-muted">Default is 123456. You can change it.</small>
+                            </div>
+                        </div>
+
+                        <h5 class="text-warning border-bottom pb-2 mb-4">Profile Details</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Upload Photo</label>
+                                <input type="file" name="photoFile" class="form-control" accept="image/*" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Biography</label>
+                                <textarea asp-for="Biography" class="form-control" rows="3" placeholder="Short bio..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-success py-3 fw-bold fs-5 shadow-sm">
+                                <i class="fa fa-save me-2"></i> SAVE & CREATE AGENT
+                            </button>
+                            <a href="/" class="btn btn-light text-muted">Cancel</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
