@@ -1,0 +1,300 @@
+﻿@model IEnumerable<RealEstateSite.Models.Property>
+
+@{
+    ViewData["Title"] = "Properties";
+}
+
+<style>
+    body {
+        background-color: #f4f6f8;
+    }
+
+    /* --- SIDEBAR --- */
+    .sticky-sidebar {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 20px;
+        z-index: 100;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+        .sticky-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sticky-sidebar::-webkit-scrollbar-thumb {
+            background-color: #ced4da;
+            border-radius: 10px;
+        }
+
+    .filter-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 8px;
+        margin-top: 15px;
+        display: block;
+    }
+
+    .scroll-box {
+        max-height: 150px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    /* --- PROPERTY CARD --- */
+    .property-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+    }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    .card-img-wrapper {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .card-img-top {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .property-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    .clickable-area {
+        text-decoration: none;
+        color: inherit;
+    }
+
+        .clickable-area:hover {
+            color: inherit;
+        }
+</style>
+
+<div class="container-fluid px-4 mt-4">
+    <div class="row">
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="sticky-sidebar card border-0 shadow-sm p-3">
+                <form asp-action="Index" method="get">
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2"></i>Detailed Search</h5> <hr />
+
+                    <div class="mb-3">
+                        <input type="text" name="search" class="form-control form-control-sm rounded-pill" placeholder="Keyword Search...">
+                    </div>
+
+                    <span class="filter-title">City</span>
+                    <div id="cityList" class="scroll-box shadow-sm mb-2"></div>
+
+                    <span class="filter-title">District</span>
+                    <div id="districtList" class="scroll-box shadow-sm mb-2"><small class="text-muted ps-1">Select City First</small></div>
+
+                    <span class="filter-title">Neighborhood</span>
+                    <div class="mb-2">
+                        <input type="text" name="neighborhood" class="form-control form-control-sm" placeholder="e.g. Alsancak">
+                    </div>
+
+                    <span class="filter-title">Room Count</span>
+                    <div class="scroll-box shadow-sm">
+                        @foreach (var room in new[] { "1+0 (Studio)", "1+1", "2+1", "3+1", "4+1", "5+1", "More than 5" })
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="roomCounts" value="@room" id="r_@room">
+                                <label class="form-check-label small" for="r_@room">@room</label>
+                            </div>
+                        }
+                    </div>
+
+                    <span class="filter-title">Heating Type</span>
+                    <div class="scroll-box shadow-sm">
+                        @foreach (var heat in Html.GetEnumSelectList<RealEstateSite.Models.HeatingType>())
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="heatingTypes" value="@heat.Text" id="h_@heat.Value">
+                                <label class="form-check-label small" for="h_@heat.Value">@heat.Text</label>
+                            </div>
+                        }
+                    </div>
+
+                    <span class="filter-title">Price Range (TL)</span>
+                    <div class="d-flex gap-1 mb-2">
+                        <input type="number" name="minPrice" class="form-control form-control-sm" placeholder="Min">
+                        <input type="number" name="maxPrice" class="form-control form-control-sm" placeholder="Max">
+                    </div>
+
+                    <span class="filter-title">Square Meters (m²)</span>
+                    <div class="d-flex gap-1 mb-3">
+                        <input type="number" name="minSize" class="form-control form-control-sm" placeholder="Min">
+                        <input type="number" name="maxSize" class="form-control form-control-sm" placeholder="Max">
+                    </div>
+
+                    <span class="filter-title">Features</span>
+                    <div class="scroll-box shadow-sm mb-4">
+                        @if (ViewBag.Features != null)
+                        {
+                            foreach (var feature in (List<RealEstateSite.Models.Feature>)ViewBag.Features)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="selectedFeatures" value="@feature.Id" id="f_@feature.Id">
+                                    <label class="form-check-label small" for="f_@feature.Id">@feature.Name</label>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary fw-bold rounded-pill shadow-sm">Filter</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-9 col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4 ps-2">
+                <h4 class="fw-bold m-0 text-dark">
+                    @if (Model != null)
+                    {
+                        <span>@Model.Count() Properties Found</span>
+                    }
+                    else
+                    {
+
+                        <span>Properties</span>
+                    }
+                </h4>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="Create" class="btn btn-success rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-plus-lg me-1"></i> Add New
+                    </a>
+                }
+            </div>
+
+            <div class="row g-4">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <div class="col-xl-4 col-lg-6">
+                            <div class="card property-card h-100 border-0 shadow-sm">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="card-img-wrapper d-block">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" class="card-img-top" alt="@item.Title">
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
+                                            <i class="bi bi-camera-fill fs-1"></i>
+                                        </div>
+                                    }
+                                    <span class="badge bg-@(item.Type.ToString() == "Sale" ? "danger" : "primary") position-absolute top-0 start-0 m-3 py-2 px-3 rounded-pill shadow-sm">
+                                        @item.Type.ToString()
+                                    </span>
+                                    <div class="position-absolute bottom-0 start-0 m-3 px-3 py-1 bg-white text-dark fw-bold rounded shadow-sm fs-6">
+                                        @item.Price.ToString("N0") ₺
+                                    </div>
+                                </a>
+
+                                <div class="card-body p-3 d-flex flex-column">
+                                    <div class="text-uppercase text-primary fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                        @item.City / @item.District
+                                    </div>
+                                    <h6 class="card-title fw-bold mb-3">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="clickable-area">@item.Title</a>
+                                    </h6>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between text-muted border-top pt-3 small">
+                                            <span><i class="bi bi-rulers me-1"></i> @item.SquareMeters m²</span>
+                                            <span><i class="bi bi-door-open me-1"></i> @item.RoomCount</span>
+                                        </div>
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <div class="d-flex gap-2 mt-3 pt-2">
+                                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm flex-grow-1 fw-bold text-dark"><i class="bi bi-pencil-square"></i> Edit</a>
+                                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm flex-grow-1 fw-bold"><i class="bi bi-trash"></i> Delete</a>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-grid mt-3">
+                                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill">View Details</a>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5">
+                        <div class="text-muted opacity-50 mb-3"><i class="bi bi-search" style="font-size: 4rem;"></i></div>
+                        <h4>No properties found matching your criteria.</h4>
+                        <a asp-action="Index" class="btn btn-primary rounded-pill mt-2">Show All Properties</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var allData = [];
+            // Şehir verilerini çek
+            $.getJSON('/json/data.json', function (data) {
+                allData = Array.isArray(data) ? data : (data.data || []);
+                var cityHtml = '';
+                allData.forEach(c => {
+                    cityHtml += `<div class="form-check mb-1">
+                                    <input class="form-check-input city-check" type="checkbox" name="cities" value="${c.name}" id="c_${c.name}">
+                                    <label class="form-check-label small" for="c_${c.name}">${c.name}</label>
+                                 </div>`;
+                });
+                $('#cityList').html(cityHtml);
+            });
+
+            // Şehir seçimi değiştiğinde
+            $(document).on('change', '.city-check', function() {
+                var selectedCities = $('.city-check:checked').map(function() { return this.value; }).get();
+                if(selectedCities.length === 0) {
+                    $('#districtList').html('<small class="text-muted ps-1">Select City First</small>');
+                    return;
+                }
+                var districtHtml = '';
+                selectedCities.forEach(cityName => {
+                    var city = allData.find(x => x.name === cityName);
+                    if(city && city.counties) {
+                        city.counties.forEach(dist => {
+                            districtHtml += `<div class="form-check mb-1">
+                                                <input class="form-check-input" type="checkbox" name="districts" value="${dist.name}" id="d_${dist.name}">
+                                                <label class="form-check-label small" for="d_${dist.name}">${dist.name} <span class="text-muted" style="font-size:10px">(${cityName})</span></label>
+                                             </div>`;
+                        });
+                    }
+                });
+                $('#districtList').html(districtHtml);
+            });
+        });
+    </script>
+}

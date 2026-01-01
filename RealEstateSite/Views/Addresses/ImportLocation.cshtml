@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Konum Verisi Yükle";
+}
+
+<div class="container mt-5">
+    <h2>Konum Verisi Yükle (JSON)</h2>
+    <hr />
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-success">@ViewBag.Message</div>
+    }
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="ImportLocation" enctype="multipart/form-data" method="post">
+                <div class="form-group mb-3">
+                    <label>Adana JSON Dosyasını Seç:</label>
+                    <input type="file" name="jsonFile" class="form-control" accept=".json" required />
+                </div>
+                <button type="submit" class="btn btn-primary">Veritabanına Yükle</button>
+                <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+            </form>
+        </div>
+    </div>
+</div>

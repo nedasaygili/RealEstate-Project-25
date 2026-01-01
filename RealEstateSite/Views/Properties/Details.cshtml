@@ -1,0 +1,361 @@
+﻿@model RealEstateSite.Models.Property
+
+@{
+    ViewData["Title"] = Model.Title;
+
+    // Agent resmi hesaplama mantığı (Sadece aktifse kullanılacak ama burada kalabilir)
+    string agentImage = Model.Agent?.ProfileImageUrl;
+    if (string.IsNullOrEmpty(agentImage))
+    {
+        var agentName = (Model.Agent?.FirstName ?? "A") + "+" + (Model.Agent?.LastName ?? "B");
+        agentImage = "https://ui-avatars.com/api/?name=" + agentName + "&background=0D8ABC&color=fff&size=128";
+    }
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f8f9fa;
+    }
+
+    .card-custom {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        background-color: white;
+        transition: transform 0.2s ease;
+    }
+
+    /* Sağ taraftaki küçük bilgi kutuları */
+    .feature-box {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 20px 10px;
+        text-align: center;
+        transition: all 0.3s;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        height: 100%;
+    }
+
+        .feature-box:hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+        }
+
+    .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    /* Galeri Okları */
+    .carousel-control-prev, .carousel-control-next {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        margin: 0 10px;
+        opacity: 0.8;
+    }
+
+    /* Agent Kartı Sol Çizgi */
+    .agent-card-border {
+        border-left: 5px solid #4f46e5;
+    }
+
+    /* Şirket Kartı Sol Çizgi (Kırmızı) */
+    .company-card-border {
+        border-left: 5px solid #dc3545;
+    }
+
+    /* Badge */
+    .badge-custom {
+        font-size: 0.85rem;
+        padding: 0.5em 1em;
+        border-radius: 30px;
+    }
+
+    a {
+        text-decoration: none;
+    }
+</style>
+
+<div class="container py-5">
+
+    <div class="row mb-3 align-items-end">
+        <div class="col-md-8">
+            <span class="badge bg-primary badge-custom mb-2">@Model.Category</span>
+            <span class="badge bg-dark badge-custom mb-2 ms-1">@Model.Type</span>
+            <h2 class="fw-bold text-dark mb-1">@Model.Title</h2>
+            <p class="text-secondary mb-0">
+                <i class="fa fa-map-marker-alt text-danger me-2"></i>
+                @Model.City, @Model.District <span class="text-muted small">(@Model.Address)</span>
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <h2 class="text-primary fw-bold mb-0">@Model.Price.ToString("N0") ₺</h2>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-7 mb-3 mb-lg-0">
+            <div class="card card-custom overflow-hidden" style="height: 400px;">
+                <div id="mainCarousel" class="carousel slide h-100" data-bs-ride="carousel">
+                    <div class="carousel-inner h-100 bg-light">
+                        @if (Model.Photos != null && Model.Photos.Count > 0)
+                        {
+                            var i = 0;
+                            foreach (var photo in Model.Photos)
+                            {
+                                <div class="carousel-item @(i == 0 ? "active" : "") h-100">
+                                    <img src="@photo.Url" class="d-block w-100 h-100" style="object-fit: cover;" alt="Property Image" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-bs-slide-to="@i">
+                                </div>
+                                i++;
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <div class="carousel-item active h-100">
+                                <img src="@Model.ImageUrl" class="d-block w-100 h-100" style="object-fit: cover;" alt="@Model.Title" data-bs-toggle="modal" data-bs-target="#lightboxModal">
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="carousel-item active h-100 d-flex justify-content-center align-items-center">
+                                <span class="text-muted"><i class="fa fa-camera fa-3x"></i><br>No Photos</span>
+                            </div>
+                        }
+                    </div>
+
+                    @if ((Model.Photos != null && Model.Photos.Count > 1))
+                    {
+                        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="row g-3 h-100 align-content-center">
+                <div class="col-6">
+                    <div class="feature-box text-primary">
+                        <i class="fa fa-vector-square feature-icon"></i>
+                        <h5 class="fw-bold text-dark mb-0">@Model.SquareMeters m²</h5>
+                        <small class="text-secondary">Net Area</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="feature-box text-warning">
+                        <i class="fa fa-door-open feature-icon"></i>
+                        <h5 class="fw-bold text-dark mb-0">@Model.RoomCount</h5>
+                        <small class="text-secondary">Rooms</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="feature-box text-info">
+                        <i class="fa fa-building feature-icon"></i>
+                        <h5 class="fw-bold text-dark mb-0">@Model.BuildingAge</h5>
+                        <small class="text-secondary">Building Age</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="feature-box text-danger">
+                        <i class="fa fa-fire-alt feature-icon"></i>
+                        <h5 class="fw-bold text-dark mb-0">@Model.Heating</h5>
+                        <small class="text-secondary">Heating</small>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <div class="card card-custom p-3">
+                        <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                            <span class="text-muted">Listing Date</span>
+                            <span class="fw-bold">@Model.ListingDate.ToString("dd.MM.yyyy")</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Listing ID</span>
+                            <span class="fw-bold">#@Model.Id</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card card-custom p-4">
+                <div class="row">
+                    @if (Model.PropertyFeatures != null && Model.PropertyFeatures.Any())
+                    {
+                        foreach (var item in Model.PropertyFeatures)
+                        {
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="d-flex align-items-center p-2 rounded border bg-light">
+                                    <i class="fa fa-check-circle text-success me-2 fs-5"></i>
+                                    <span class="fw-bold text-dark">@item.Feature.Name</span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <span class="text-muted fst-italic">No specific features listed for this property.</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card card-custom p-4">
+                <h4 class="fw-bold mb-3 border-bottom pb-2">Description</h4>
+                <p class="text-secondary lh-lg mb-0" style="white-space: pre-line;">
+                    @Model.Description
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6 mb-3 mb-md-0">
+            @if (Model.Agent != null && Model.Agent.Status == true)
+            {
+                <div class="card card-custom agent-card-border p-4 h-100">
+                    <div class="d-flex align-items-center">
+                        <img src="@agentImage" class="rounded-circle border border-2 border-white shadow-sm me-4" style="width: 90px; height: 90px; object-fit: cover;" alt="Agent">
+                        <div>
+                            <h6 class="text-uppercase text-muted small fw-bold mb-1">Listing Agent</h6>
+                            <h4 class="fw-bold mb-2">@((Model.Agent?.FirstName + " " + Model.Agent?.LastName)?.ToUpper())</h4>
+
+                            <div class="d-flex flex-column gap-1">
+                                <a href="tel:@(Model.Agent?.PhoneNumber)" class="text-decoration-none text-muted small"><i class="fa fa-phone me-2 text-success"></i> @(Model.Agent?.PhoneNumber ?? "-")</a>
+                                <a href="mailto:@(Model.Agent?.Email)" class="text-primary small fw-bold text-decoration-underline">
+                                    <i class="fa fa-envelope me-2"></i> @(Model.Agent?.Email ?? "Email Agent")
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card card-custom company-card-border p-4 h-100">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-dark d-inline-flex justify-content-center align-items-center text-white me-4 shadow-sm border border-2 border-white" style="width: 90px; height: 90px;">
+                            <span class="fw-bold fs-4">UNEA</span>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-danger small fw-bold mb-1">Corporate Office</h6>
+                            <h4 class="fw-bold mb-2">UNEA REAL ESTATE</h4>
+
+                            <div class="d-flex flex-column gap-1">
+                                <span class="text-muted small fst-italic mb-1">Managed by Head Office</span>
+                                <a href="tel:02120000000" class="text-dark small fw-bold text-decoration-none">
+                                    <i class="fa fa-phone me-2"></i> 0212 000 00 00
+                                </a>
+                                <a href="mailto:info@unea.com" class="text-dark small fw-bold text-decoration-underline">
+                                    <i class="fa fa-envelope me-2"></i> info@unea.com
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <div class="card card-custom bg-warning bg-opacity-10 border border-warning p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3"><i class="fa fa-shield-alt text-warning me-2"></i>Safe Trading</h5>
+                <ul class="list-unstyled mb-0 small text-muted">
+                    <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Always verify documents in person.</li>
+                    <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Meet in public places.</li>
+                    <li><i class="fa fa-check text-success me-2"></i> Never transfer money beforehand.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-custom bg-dark text-white text-center p-4">
+                <h5 class="fw-light mb-2">Can't find what you're looking for?</h5>
+                <p class="small opacity-75 mb-3">Contact our main office for special requests.</p>
+                <a href="mailto:info@unea.com" class="btn btn-outline-light rounded-pill px-4">Contact Company</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm fw-bold"><i class="fa fa-edit"></i> Edit Listing</a>
+        <a asp-action="Index" class="btn btn-light btn-sm border ms-2">Back to List</a>
+    </div>
+
+</div>
+
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0 shadow-none">
+            <div class="modal-body p-0 position-relative text-center">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div id="lightboxCarousel" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-inner">
+                        @if (Model.Photos != null && Model.Photos.Count > 0)
+                        {
+                            var j = 0;
+                            foreach (var photo in Model.Photos)
+                            {
+                                <div class="carousel-item @(j == 0 ? "active" : "")">
+                                    <img src="@photo.Url" class="img-fluid rounded shadow-lg" style="max-height: 85vh;" alt="Zoomed Image">
+                                </div>
+                                j++;
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <div class="carousel-item active">
+                                <img src="@Model.ImageUrl" class="img-fluid rounded shadow-lg" style="max-height: 85vh;" alt="Zoomed Image">
+                            </div>
+                        }
+                    </div>
+                    @if ((Model.Photos != null && Model.Photos.Count > 1))
+                    {
+                        <button class="carousel-control-prev" type="button" data-bs-target="#lightboxCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#lightboxCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var lightboxModal = document.getElementById('lightboxModal');
+        lightboxModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var slideTo = button.getAttribute('data-bs-slide-to');
+            var lightboxCarousel = document.getElementById('lightboxCarousel');
+            var bsCarousel = new bootstrap.Carousel(lightboxCarousel);
+            bsCarousel.to(parseInt(slideTo));
+        });
+    </script>
+}

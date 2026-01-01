@@ -1,0 +1,56 @@
+﻿@model RealEstateSite.Models.Property
+
+@{
+    ViewData["Title"] = "Delete Listing";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-danger text-white p-4">
+                    <h4 class="fw-bold mb-0"><i class="fa fa-exclamation-triangle me-2"></i> Delete Confirmation</h4>
+                </div>
+                <div class="card-body p-5">
+                    <h3 class="text-center mb-4">Are you sure you want to delete this listing?</h3>
+                    <p class="text-center text-muted mb-5">This action cannot be undone. The listing (including its photos) will be permanently removed from the database.</p>
+
+                    <div class="row align-items-center bg-light p-4 rounded-4 mb-4">
+                        <div class="col-md-4">
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <img src="@Model.ImageUrl" class="img-fluid rounded-3 shadow-sm" style="object-fit: cover; height: 150px; width: 100%;" alt="@Model.Title">
+                            }
+                            else
+                            {
+                                <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded-3" style="height: 150px;">
+                                    <span>No Image</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <h4 class="fw-bold text-dark">@Model.Title</h4>
+                            <p class="text-primary fw-bold fs-5">@Model.Price.ToString("N0") ₺</p>
+                            <p class="small text-muted mb-0"><i class="fa fa-map-marker-alt me-1"></i> @Model.City / @Model.District</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3">
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <button type="submit" class="btn btn-danger px-5 py-2 fw-bold rounded-pill shadow">
+                                <i class="fa fa-trash me-2"></i> YES, DELETE
+                            </button>
+                        </form>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-5 py-2 fw-bold rounded-pill">
+                            CANCEL
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted">Admin Access: <strong>Active</strong></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

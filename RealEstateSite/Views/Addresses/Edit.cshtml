@@ -1,0 +1,69 @@
+﻿@model RealEstateSite.Models.Address
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Address</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="City" class="control-label"></label>
+                <input asp-for="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="District" class="control-label"></label>
+                <input asp-for="District" class="form-control" />
+                <span asp-validation-for="District" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Neighborhood" class="control-label"></label>
+                <input asp-for="Neighborhood" class="form-control" />
+                <span asp-validation-for="Neighborhood" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Street" class="control-label"></label>
+                <input asp-for="Street" class="form-control" />
+                <span asp-validation-for="Street" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BuildingNo" class="control-label"></label>
+                <input asp-for="BuildingNo" class="form-control" />
+                <span asp-validation-for="BuildingNo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Floor" class="control-label"></label>
+                <input asp-for="Floor" class="form-control" />
+                <span asp-validation-for="Floor" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DoorNo" class="control-label"></label>
+                <input asp-for="DoorNo" class="form-control" />
+                <span asp-validation-for="DoorNo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FullAddress" class="control-label"></label>
+                <input asp-for="FullAddress" class="form-control" />
+                <span asp-validation-for="FullAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

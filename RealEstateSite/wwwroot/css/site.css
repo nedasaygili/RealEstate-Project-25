@@ -1,0 +1,140 @@
+:root {
+    --teal: #1abc9c;
+    --coral: #e74c3c;
+    --gold: #f1c40f;
+    --navy: #2c3e50;
+}
+
+/* Logo Renkleri */
+.logo .u {
+    color: var(--teal);
+}
+
+.logo .n {
+    color: var(--coral);
+}
+
+.logo .e {
+    color: var(--gold);
+}
+
+.logo .a {
+    color: var(--navy);
+}
+
+/* Hero Section (Ev Fotoðraflý) */
+.hero-main {
+    background: linear-gradient(rgba(44, 62, 80, 0.5), rgba(44, 62, 80, 0.5)), url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    padding: 120px 0;
+    color: white;
+    border-radius: 0 0 40px 40px;
+}
+
+/* Turkuaz Özellik Ýkonlarý */
+.feature-box-teal {
+    background: #f0fdfa;
+    border: 1px solid var(--teal);
+    border-radius: 15px;
+    padding: 20px;
+    color: var(--navy);
+    text-align: center;
+    height: 100%;
+    transition: 0.3s;
+}
+
+    .feature-box-teal i {
+        color: var(--teal);
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+/* Floating WhatsApp */
+.floating-wp {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #25d366;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    z-index: 9999;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    text-decoration: none;
+}
+
+/* SSS & Yorumlar */
+.review-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #eee;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.faq-icon {
+    color: var(--teal);
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+/* --- YATAY KAYDIRMA (SLIDER) ÖZELLÝKLERÝ --- */
+.portfolio-scroll-wrapper {
+    display: flex;
+    flex-wrap: nowrap; /* Kartlarýn alt satýra düþmesini engeller */
+    overflow-x: auto; /* Yatay kaydýrmayý açar */
+    gap: 20px; /* Kartlar arasý boþluk */
+    padding: 10px 5px 25px 5px; /* Alt kýsýmdan scroll çubuðu için boþluk */
+    -webkit-overflow-scrolling: touch; /* Mobil uyumluluk */
+}
+
+    /* Scroll Çubuðu Tasarýmý */
+    .portfolio-scroll-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .portfolio-scroll-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .portfolio-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+
+        .portfolio-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+
+/* Kartlarýn Sabit Geniþliði */
+.scroll-item {
+    flex: 0 0 auto; /* Kartlarý sýkýþtýrma */
+    width: 300px; /* Her kartýn geniþliði */
+}
+
+/* --- SSS (FAQ) TASARIMI --- */
+.faq-section .accordion-button {
+    font-size: 1.15rem; /* Yazý boyutu büyütüldü */
+    font-weight: 600;
+    color: #333;
+}
+
+    .faq-section .accordion-button:not(.collapsed) {
+        background-color: #e9ecef;
+        color: #0d6efd;
+        box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+    }
+
+.faq-image img {
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Hafif gölge */
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}

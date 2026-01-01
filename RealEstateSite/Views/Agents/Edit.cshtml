@@ -1,0 +1,110 @@
+﻿@model RealEstateSite.Models.Agent
+@{
+    ViewData["Title"] = "Edit Agent";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h3 class="mb-0"><i class="bi bi-person-gear"></i> Edit Agent Profile</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ProfileImageUrl" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="FirstName" class="form-control" placeholder="First Name" required />
+                                    <label asp-for="FirstName">First Name *</label>
+                                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="LastName" class="form-control" placeholder="Last Name" required />
+                                    <label asp-for="LastName">Last Name *</label>
+                                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="Title" class="form-control" placeholder="Title" required />
+                                    <label asp-for="Title">Title *</label>
+                                    <span asp-validation-for="Title" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="PhoneNumber" class="form-control" placeholder="Phone" required />
+                                    <label asp-for="PhoneNumber">Phone Number *</label>
+                                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" type="email" class="form-control" placeholder="Email" required />
+                            <label asp-for="Email">Email Address *</label>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3 p-3 border rounded bg-light">
+                            <label class="form-label fw-bold text-secondary">Profile Image</label>
+
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                                {
+                                    <img src="@Model.ProfileImageUrl" alt="Current Profile" class="rounded-circle border" style="width: 60px; height: 60px; object-fit: cover;" />
+                                    <span class="text-muted small">Current Image</span>
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <span class="text-muted small">No Image</span>
+                                }
+                            </div>
+
+                            <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                            <small class="text-muted">Upload a new photo to replace the current one.</small>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <textarea asp-for="Biography" class="form-control" placeholder="Biography" style="height: 100px" required></textarea>
+                            <label asp-for="Biography">Biography *</label>
+                            <span asp-validation-for="Biography" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Password" type="text" class="form-control" placeholder="Password" required />
+                            <label asp-for="Password">Password *</label>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                                <i class="bi bi-save me-2"></i>Save Changes
+                            </button>
+                            <a asp-action="Index" class="btn btn-light text-muted">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
