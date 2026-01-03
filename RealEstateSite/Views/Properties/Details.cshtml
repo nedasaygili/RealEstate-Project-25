@@ -3,7 +3,10 @@
 @{
     ViewData["Title"] = Model.Title;
 
-    // Agent resmi hesaplama mantığı (Sadece aktifse kullanılacak ama burada kalabilir)
+    // Kategori kontrolü (Arsa mı?)
+    bool isLand = Model.Category == RealEstateSite.Models.PropertyCategory.Land;
+
+    // Agent resmi yoksa varsayılan ata
     string agentImage = Model.Agent?.ProfileImageUrl;
     if (string.IsNullOrEmpty(agentImage))
     {
@@ -29,7 +32,6 @@
         transition: transform 0.2s ease;
     }
 
-    /* Sağ taraftaki küçük bilgi kutuları */
     .feature-box {
         background-color: #ffffff;
         border-radius: 12px;
@@ -52,7 +54,6 @@
         display: block;
     }
 
-    /* Galeri Okları */
     .carousel-control-prev, .carousel-control-next {
         width: 40px;
         height: 40px;
@@ -64,17 +65,14 @@
         opacity: 0.8;
     }
 
-    /* Agent Kartı Sol Çizgi */
     .agent-card-border {
         border-left: 5px solid #4f46e5;
     }
 
-    /* Şirket Kartı Sol Çizgi (Kırmızı) */
     .company-card-border {
         border-left: 5px solid #dc3545;
     }
 
-    /* Badge */
     .badge-custom {
         font-size: 0.85rem;
         padding: 0.5em 1em;
@@ -87,7 +85,6 @@
 </style>
 
 <div class="container py-5">
-
     <div class="row mb-3 align-items-end">
         <div class="col-md-8">
             <span class="badge bg-primary badge-custom mb-2">@Model.Category</span>
@@ -99,7 +96,7 @@
             </p>
         </div>
         <div class="col-md-4 text-md-end">
-            <h2 class="text-primary fw-bold mb-0">@Model.Price.ToString("N0") ₺</h2>
+            <h2 class="text-primary fw-bold mb-0">@((Model.Price ?? 0).ToString("N0")) ₺</h2>
         </div>
     </div>
 
@@ -132,15 +129,10 @@
                             </div>
                         }
                     </div>
-
                     @if ((Model.Photos != null && Model.Photos.Count > 1))
                     {
-                        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        </button>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span></button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span></button>
                     }
                 </div>
             </div>
@@ -155,27 +147,41 @@
                         <small class="text-secondary">Net Area</small>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="feature-box text-warning">
-                        <i class="fa fa-door-open feature-icon"></i>
-                        <h5 class="fw-bold text-dark mb-0">@Model.RoomCount</h5>
-                        <small class="text-secondary">Rooms</small>
+
+                @if (!isLand)
+                {
+                    <div class="col-6">
+                        <div class="feature-box text-warning">
+                            <i class="fa fa-door-open feature-icon"></i>
+                            <h5 class="fw-bold text-dark mb-0">@Model.RoomCount</h5>
+                            <small class="text-secondary">Rooms</small>
+                        </div>
                     </div>
-                </div>
-                <div class="col-6">
-                    <div class="feature-box text-info">
-                        <i class="fa fa-building feature-icon"></i>
-                        <h5 class="fw-bold text-dark mb-0">@Model.BuildingAge</h5>
-                        <small class="text-secondary">Building Age</small>
+                    <div class="col-6">
+                        <div class="feature-box text-info">
+                            <i class="fa fa-building feature-icon"></i>
+                            <h5 class="fw-bold text-dark mb-0">@Model.BuildingAge</h5>
+                            <small class="text-secondary">Building Age</small>
+                        </div>
                     </div>
-                </div>
-                <div class="col-6">
-                    <div class="feature-box text-danger">
-                        <i class="fa fa-fire-alt feature-icon"></i>
-                        <h5 class="fw-bold text-dark mb-0">@Model.Heating</h5>
-                        <small class="text-secondary">Heating</small>
+                    <div class="col-6">
+                        <div class="feature-box text-danger">
+                            <i class="fa fa-fire-alt feature-icon"></i>
+                            <h5 class="fw-bold text-dark mb-0">@Model.Heating</h5>
+                            <small class="text-secondary">Heating</small>
+                        </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="col-6">
+                        <div class="feature-box text-success">
+                            <i class="fa fa-tree feature-icon"></i>
+                            <h5 class="fw-bold text-dark mb-0">Land</h5>
+                            <small class="text-secondary">Type</small>
+                        </div>
+                    </div>
+                }
 
                 <div class="col-12 mt-3">
                     <div class="card card-custom p-3">
@@ -211,9 +217,8 @@
                     }
                     else
                     {
-                        <div class="col-12">
-                            <span class="text-muted fst-italic">No specific features listed for this property.</span>
-                        </div>
+
+                        <div class="col-12"><span class="text-muted fst-italic">No specific features listed for this property.</span></div>
                     }
                 </div>
             </div>
@@ -224,9 +229,7 @@
         <div class="col-12">
             <div class="card card-custom p-4">
                 <h4 class="fw-bold mb-3 border-bottom pb-2">Description</h4>
-                <p class="text-secondary lh-lg mb-0" style="white-space: pre-line;">
-                    @Model.Description
-                </p>
+                <p class="text-secondary lh-lg mb-0" style="white-space: pre-line;">@Model.Description</p>
             </div>
         </div>
     </div>
@@ -241,12 +244,9 @@
                         <div>
                             <h6 class="text-uppercase text-muted small fw-bold mb-1">Listing Agent</h6>
                             <h4 class="fw-bold mb-2">@((Model.Agent?.FirstName + " " + Model.Agent?.LastName)?.ToUpper())</h4>
-
                             <div class="d-flex flex-column gap-1">
                                 <a href="tel:@(Model.Agent?.PhoneNumber)" class="text-decoration-none text-muted small"><i class="fa fa-phone me-2 text-success"></i> @(Model.Agent?.PhoneNumber ?? "-")</a>
-                                <a href="mailto:@(Model.Agent?.Email)" class="text-primary small fw-bold text-decoration-underline">
-                                    <i class="fa fa-envelope me-2"></i> @(Model.Agent?.Email ?? "Email Agent")
-                                </a>
+                                <a href="mailto:@(Model.Agent?.Email)" class="text-primary small fw-bold text-decoration-underline"><i class="fa fa-envelope me-2"></i> @(Model.Agent?.Email ?? "Email Agent")</a>
                             </div>
                         </div>
                     </div>
@@ -256,28 +256,20 @@
             {
                 <div class="card card-custom company-card-border p-4 h-100">
                     <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-dark d-inline-flex justify-content-center align-items-center text-white me-4 shadow-sm border border-2 border-white" style="width: 90px; height: 90px;">
-                            <span class="fw-bold fs-4">UNEA</span>
-                        </div>
+                        <div class="rounded-circle bg-dark d-inline-flex justify-content-center align-items-center text-white me-4 shadow-sm border border-2 border-white" style="width: 90px; height: 90px;"><span class="fw-bold fs-4">UNEA</span></div>
                         <div>
                             <h6 class="text-uppercase text-danger small fw-bold mb-1">Corporate Office</h6>
                             <h4 class="fw-bold mb-2">UNEA REAL ESTATE</h4>
-
                             <div class="d-flex flex-column gap-1">
                                 <span class="text-muted small fst-italic mb-1">Managed by Head Office</span>
-                                <a href="tel:02120000000" class="text-dark small fw-bold text-decoration-none">
-                                    <i class="fa fa-phone me-2"></i> 0212 000 00 00
-                                </a>
-                                <a href="mailto:info@unea.com" class="text-dark small fw-bold text-decoration-underline">
-                                    <i class="fa fa-envelope me-2"></i> info@unea.com
-                                </a>
+                                <a href="tel:02120000000" class="text-dark small fw-bold text-decoration-none"><i class="fa fa-phone me-2"></i> 0212 000 00 00</a>
+                                <a href="mailto:info@unea.com" class="text-dark small fw-bold text-decoration-underline"><i class="fa fa-envelope me-2"></i> info@unea.com</a>
                             </div>
                         </div>
                     </div>
                 </div>
             }
         </div>
-
         <div class="col-md-6">
             <div class="card card-custom bg-warning bg-opacity-10 border border-warning p-4 h-100">
                 <h5 class="fw-bold text-dark mb-3"><i class="fa fa-shield-alt text-warning me-2"></i>Safe Trading</h5>
@@ -290,21 +282,13 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card card-custom bg-dark text-white text-center p-4">
-                <h5 class="fw-light mb-2">Can't find what you're looking for?</h5>
-                <p class="small opacity-75 mb-3">Contact our main office for special requests.</p>
-                <a href="mailto:info@unea.com" class="btn btn-outline-light rounded-pill px-4">Contact Company</a>
-            </div>
-        </div>
-    </div>
-
     <div class="mt-4">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm fw-bold"><i class="fa fa-edit"></i> Edit Listing</a>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm fw-bold"><i class="fa fa-edit"></i> Edit Listing</a>
+        }
         <a asp-action="Index" class="btn btn-light btn-sm border ms-2">Back to List</a>
     </div>
-
 </div>
 
 <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
@@ -334,12 +318,8 @@
                     </div>
                     @if ((Model.Photos != null && Model.Photos.Count > 1))
                     {
-                        <button class="carousel-control-prev" type="button" data-bs-target="#lightboxCarousel" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#lightboxCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        </button>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#lightboxCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span></button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#lightboxCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span></button>
                     }
                 </div>
             </div>
@@ -355,7 +335,7 @@
             var slideTo = button.getAttribute('data-bs-slide-to');
             var lightboxCarousel = document.getElementById('lightboxCarousel');
             var bsCarousel = new bootstrap.Carousel(lightboxCarousel);
-            bsCarousel.to(parseInt(slideTo));
+            if(slideTo) { bsCarousel.to(parseInt(slideTo)); }
         });
     </script>
 }

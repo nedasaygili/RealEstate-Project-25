@@ -29,9 +29,10 @@ builder.Services.AddControllersWithViews();
 var app = builder.Build();
 
 // --------------------------------------------------------
-// 2. OTOMATÝK VERÝ YÜKLEME (SEEDING) - BURASI YENÝ
+// 2. OTOMATÝK KURULUM VE VERÝ YÜKLEME (MIGRATION & SEEDING)
 // --------------------------------------------------------
-// Proje her baþladýðýnda veritabanýný kontrol eder, eksik varsa tamamlar.
+// Proje her baþladýðýnda veritabanýný kontrol eder.
+// Yoksa oluþturur, varsa günceller ve eksik verileri tamamlar.
 
 using (var scope = app.Services.CreateScope())
 {
@@ -40,12 +41,18 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<RealEstateSite.Data.ApplicationDbContext>();
 
-        // DbSeeder içindeki Seed metodunu çalýþtýr
+        // --- ADIM A: OTOMATÝK MIGRATION ---
+        // Bu satýr "Update-Database" komutunu senin yerine arka planda çalýþtýrýr.
+        context.Database.Migrate();
+
+        // --- ADIM B: VERÝ YÜKLEME (SEED) ---
+        // DbSeeder içindeki Seed metodunu çalýþtýr (Admin, Emlakçý vb. ekle)
         RealEstateSite.Data.DbSeeder.Seed(context);
     }
     catch (Exception ex)
     {
-        Console.WriteLine("Veri yüklenirken hata oluþtu: " + ex.Message);
+        // Hata olursa konsola yaz (Loglama)
+        Console.WriteLine("Veritabaný kurulumu sýrasýnda hata oluþtu: " + ex.Message);
     }
 }
 
@@ -73,7 +80,7 @@ app.UseAuthorization();
 // ROTA AYARLAMASI
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}"); // <-- BURASI STANDART
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // --------------------------------------------------------
 // 4. UYGULAMAYI BAÞLAT

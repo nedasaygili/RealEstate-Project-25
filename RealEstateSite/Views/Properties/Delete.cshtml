@@ -30,7 +30,9 @@
                         </div>
                         <div class="col-md-8">
                             <h4 class="fw-bold text-dark">@Model.Title</h4>
-                            <p class="text-primary fw-bold fs-5">@Model.Price.ToString("N0") ₺</p>
+
+                            <p class="text-primary fw-bold fs-5">@((Model.Price ?? 0).ToString("N0")) ₺</p>
+
                             <p class="small text-muted mb-0"><i class="fa fa-map-marker-alt me-1"></i> @Model.City / @Model.District</p>
                         </div>
                     </div>

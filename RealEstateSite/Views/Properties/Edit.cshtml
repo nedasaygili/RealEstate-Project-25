@@ -1,7 +1,7 @@
 ﻿@model RealEstateSite.Models.Property
 
 @{
-    ViewData["Title"] = "İlanı Düzenle";
+    ViewData["Title"] = "Edit Property";
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -18,7 +18,7 @@
         }
 
         .photo-container img {
-            width: 100px; /* Fotoğrafları biraz büyüttüm */
+            width: 100px;
             height: 75px;
             object-fit: cover;
             cursor: pointer;
@@ -28,12 +28,11 @@
         position: absolute;
         top: -10px;
         right: -10px;
-        background-color: #dc3545; /* Kırmızı renk */
+        background-color: #dc3545;
         color: white;
         border-radius: 50%;
         width: 24px;
         height: 24px;
-        /* İkonu tam ortalamak için Flexbox */
         display: none;
         align-items: center;
         justify-content: center;
@@ -46,7 +45,7 @@
     }
 
     .photo-container:hover .delete-photo-btn {
-        display: flex; /* Sadece üzerine gelince göster */
+        display: flex;
     }
 </style>
 
@@ -54,38 +53,39 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="card shadow-lg border-0 rounded-lg">
-                <div class="card-header bg-success text-white py-3">
-                    <h4 class="mb-0 text-center"><i class="bi bi-house-gear-fill"></i> İlan Bilgilerini Güncelle</h4>
+                <div class="card-header bg-warning text-white py-3">
+                    <h4 class="mb-0 text-center"><i class="bi bi-pencil-square"></i> Edit Property Details</h4>
                 </div>
                 <div class="card-body p-4">
                     <form asp-action="Edit" enctype="multipart/form-data" id="editForm">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="ListingDate" />
-                        <input type="hidden" asp-for="AgentId" />
                         <input type="hidden" asp-for="ImageUrl" />
 
-                        <h6 class="text-success text-uppercase border-bottom pb-2 mb-3">Temel Bilgiler</h6>
+                        <h6 class="text-warning text-uppercase border-bottom pb-2 mb-3">Basic Information</h6>
                         <div class="row">
                             <div class="col-md-8">
-                                <div class="form-floating mb-3">
-                                    <input asp-for="Title" class="form-control" placeholder="Başlık" />
-                                    <label asp-for="Title">İlan Başlığı</label>
+                                <div class="mb-3">
+                                    <label asp-for="Title" class="form-label fw-bold">Listing Title <span class="text-danger">*</span></label>
+                                    <input asp-for="Title" class="form-control" placeholder="e.g. Luxury Villa" required />
                                     <span asp-validation-for="Title" class="text-danger small"></span>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="form-floating mb-3">
-                                    <input asp-for="Price" type="number" min="0" class="form-control" placeholder="Fiyat" />
-                                    <label asp-for="Price">Fiyat (₺)</label>
+                                <div class="mb-3">
+                                    <label asp-for="Price" class="form-label fw-bold">Price <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₺</span>
+                                        <input asp-for="Price" type="number" min="0" class="form-control" required />
+                                    </div>
                                     <span asp-validation-for="Price" class="text-danger small"></span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-muted mb-2">Mevcut Fotoğraflar</label>
-
+                            <label class="form-label fw-bold text-muted mb-2">Current Photos</label>
                             @if (Model.Photos != null && Model.Photos.Count > 0)
                             {
                                 <div class="d-flex flex-wrap gap-4 mb-3 p-4 border rounded bg-light">
@@ -93,7 +93,7 @@
                                     {
                                         <div class="photo-container" id="photo-container-@photo.Id">
                                             <img src="@photo.Url" class="rounded border shadow-sm" />
-                                            <div class="delete-photo-btn" onclick="deletePhoto(@photo.Id)" title="Sil">
+                                            <div class="delete-photo-btn" onclick="deletePhoto(@photo.Id)" title="Delete">
                                                 <i class="bi bi-x"></i>
                                             </div>
                                         </div>
@@ -103,103 +103,113 @@
                             else if (!string.IsNullOrEmpty(Model.ImageUrl))
                             {
                                 <div class="mb-3 p-3 border rounded bg-light">
-                                    <span class="badge bg-warning text-dark mb-2">Ana Resim</span><br>
+                                    <span class="badge bg-warning text-dark mb-2">Main Image</span><br>
                                     <img src="@Model.ImageUrl" class="rounded border" style="width: 100px; height: 75px; object-fit: cover;" />
                                 </div>
                             }
 
-                            <label class="form-label fw-bold text-muted mt-2">Yeni Fotoğraf Ekle</label>
+                            <label class="form-label fw-bold text-muted mt-2">Add New Photos</label>
                             <div class="input-group">
                                 <input type="file" name="imageFiles" class="form-control" multiple accept="image/*" />
                                 <span class="input-group-text"><i class="bi bi-images"></i></span>
                             </div>
-                            <small class="text-muted">Yeni seçilen fotoğraflar mevcutlara eklenecektir.</small>
+                            <small class="text-muted">Newly selected photos will be added to the existing ones.</small>
                         </div>
 
-                        <h6 class="text-success text-uppercase border-bottom pb-2 mb-3 mt-4">Konum & Kategori</h6>
+                        <h6 class="text-warning text-uppercase border-bottom pb-2 mb-3 mt-4">Location & Category</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="form-floating mb-3">
-                                    <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.ListingType>()"></select>
-                                    <label asp-for="Type">Satılık / Kiralık</label>
+                                <div class="mb-3">
+                                    <label asp-for="Type" class="form-label fw-bold">Status <span class="text-danger">*</span></label>
+                                    <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.ListingType>()" required></select>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating mb-3">
-                                    <select asp-for="Category" id="categorySelect" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.PropertyCategory>()"></select>
-                                    <label asp-for="Category">Emlak Tipi</label>
+                                <div class="mb-3">
+                                    <label asp-for="Category" class="form-label fw-bold">Property Type <span class="text-danger">*</span></label>
+                                    <select asp-for="Category" id="categorySelect" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.PropertyCategory>()" required></select>
                                 </div>
                             </div>
                         </div>
 
                         <div class="row bg-light p-3 rounded mb-3 border mx-0">
                             <div class="col-md-4 mb-3">
-                                <label asp-for="City" class="form-label fw-bold text-secondary">Şehir</label>
-                                <select asp-for="City" id="citySelect" class="form-select" required>
-                                    <option value="">Seçiniz...</option>
+                                <label asp-for="City" class="form-label fw-bold text-secondary">City <span class="text-danger">*</span></label>
+                                <select asp-for="City" id="citySelect" class="form-select" data-selected="@Model.City" required>
+                                    <option value="">Select...</option>
+                                    <option value="@Model.City" selected>@Model.City</option>
                                 </select>
+                                <span asp-validation-for="City" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label asp-for="District" class="form-label fw-bold text-secondary">İlçe</label>
-                                <select asp-for="District" id="districtSelect" class="form-select" required>
-                                    <option value="">Önce Şehir Seçin...</option>
+                                <label asp-for="District" class="form-label fw-bold text-secondary">District <span class="text-danger">*</span></label>
+                                <select asp-for="District" id="districtSelect" class="form-select" data-selected="@Model.District" required>
+                                    <option value="@Model.District" selected>@Model.District</option>
                                 </select>
+                                <span asp-validation-for="District" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold text-secondary">Mahalle</label>
-                                <select id="neighborhoodSelect" class="form-select">
-                                    <option value="">Önce İlçe Seçin...</option>
+                                <label asp-for="Neighborhood" class="form-label fw-bold text-secondary">Neighborhood <span class="text-danger">*</span></label>
+                                <select asp-for="Neighborhood" id="neighborhoodSelect" class="form-select" data-selected="@Model.Neighborhood" required>
+                                    <option value="@Model.Neighborhood" selected>@Model.Neighborhood</option>
                                 </select>
+                                <span asp-validation-for="Neighborhood" class="text-danger small"></span>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold text-secondary">Sokak / Apt / No (Detay)</label>
-                                <input type="text" id="addressDetailInput" class="form-control" placeholder="Örn: Cumhuriyet Cad. No:5" />
+                                <label class="form-label fw-bold text-secondary">Street / Apt / No (Detail) <span class="text-danger">*</span></label>
+                                <input type="text" id="addressDetailInput" class="form-control" placeholder="e.g. Main St. No:5" required />
                             </div>
                             <input type="hidden" asp-for="Address" id="finalAddressInput" />
                         </div>
 
-                        <h6 class="text-success text-uppercase border-bottom pb-2 mb-3 mt-4">Teknik Özellikler</h6>
+                        <h6 class="text-warning text-uppercase border-bottom pb-2 mb-3 mt-4">Technical Details</h6>
                         <div class="row">
                             <div class="col-md-3">
-                                <div class="form-floating mb-3">
-                                    <input asp-for="SquareMeters" type="number" min="0" class="form-control" placeholder="m2" />
-                                    <label asp-for="SquareMeters">Metrekare (m²)</label>
+                                <div class="mb-3">
+                                    <label asp-for="SquareMeters" class="form-label fw-bold">Area (m²) <span class="text-danger">*</span></label>
+                                    <input asp-for="SquareMeters" type="number" min="0" class="form-control" required />
+                                    <span asp-validation-for="SquareMeters" class="text-danger small"></span>
                                 </div>
                             </div>
 
-                            <div class="col-md-3">
-                                <div class="form-floating mb-3">
-                                    <select asp-for="RoomCount" class="form-select">
-                                        <option value="">Seçiniz</option>
-                                        <option value="1+0 (Stüdyo)">1+0 (Stüdyo)</option>
-                                        @{
-                                            for (int i = 1; i <= 10; i++)
-                                            {
-                                                <option value="@i+1">@i+1</option>
+                            <div class="col-md-9 row" id="housingDetails">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label asp-for="RoomCount" class="form-label fw-bold">Room Count</label>
+                                        <select asp-for="RoomCount" class="form-select">
+                                            <option value="">Select</option>
+                                            <option value="1+0 (Studio)">1+0 (Studio)</option>
+                                            @{
+                                                for (int i = 1; i <= 10; i++)
+                                                {
+                                                    <option value="@i+1">@i+1</option>
+                                                    if (i >= 2)
+                                                    {
+                                                        <option value="@i+2">@i+2</option>
+                                                    }
+                                                }
                                             }
-                                        }
-                                        <option value="More than 10">Villa Tipi / 10+</option>
-                                    </select>
-                                    <label asp-for="RoomCount">Oda Sayısı</label>
+                                            <option value="More than 10">Villa Type / 10+</option>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="col-md-3">
-                                <div class="form-floating mb-3">
-                                    <input asp-for="BuildingAge" type="number" min="0" class="form-control" placeholder="Yaş" />
-                                    <label asp-for="BuildingAge">Bina Yaşı</label>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label asp-for="BuildingAge" class="form-label fw-bold">Building Age</label>
+                                        <input asp-for="BuildingAge" type="number" min="0" class="form-control" />
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-floating mb-3">
-                                    <select asp-for="Heating" class="form-select" asp-items='Html.GetEnumSelectList<RealEstateSite.Models.HeatingType>().Where(x => x.Text != "Air Conditioning")'></select>
-                                    <label asp-for="Heating">Isıtma</label>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label asp-for="Heating" class="form-label fw-bold">Heating</label>
+                                        <select asp-for="Heating" class="form-select" asp-items="Html.GetEnumSelectList<RealEstateSite.Models.HeatingType>()"></select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div id="featuresSection" class="mb-4 mt-2 p-3 bg-light border rounded">
-                            <h6 class="fw-bold text-success mb-3"><i class="bi bi-check-square"></i> Evin Özellikleri</h6>
+                            <h6 class="fw-bold text-success mb-3"><i class="bi bi-check-square"></i> Features</h6>
                             <div class="row">
                                 @if (ViewBag.Features != null)
                                 {
@@ -209,11 +219,7 @@
                                         bool isChecked = selectedIds.Contains(feature.Id);
                                         <div class="col-6 col-md-3 mb-2">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                       name="selectedFeatureIds"
-                                                       value="@feature.Id"
-                                                       id="f_@feature.Id"
-                                                       @(isChecked ? "checked" : "")>
+                                                <input class="form-check-input" type="checkbox" name="selectedFeatureIds" value="@feature.Id" id="f_@feature.Id" @(isChecked ? "checked" : "")>
                                                 <label class="form-check-label" for="f_@feature.Id">@feature.Name</label>
                                             </div>
                                         </div>
@@ -222,21 +228,27 @@
                             </div>
                         </div>
 
-                        <div class="form-floating mb-4">
-                            <textarea asp-for="Description" class="form-control" placeholder="Açıklama" style="height: 150px"></textarea>
-                            <label asp-for="Description">İlan Detayları</label>
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-bold">Description</label>
+                            <textarea asp-for="Description" class="form-control" placeholder="Property Description" style="height: 150px" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
                         <div class="form-check form-switch mb-4">
                             <input class="form-check-input" type="checkbox" asp-for="IsActive">
-                            <label class="form-check-label" for="IsActive">İlan Yayında (Aktif)</label>
+                            <label class="form-check-label" for="IsActive">Listing is Active (Published)</label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="AgentId" class="form-label fw-bold">Agent <span class="text-danger">*</span></label>
+                            <select asp-for="AgentId" class="form-select" asp-items="ViewBag.AgentId" required></select>
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg shadow-sm">
-                                <i class="bi bi-check-lg"></i> Değişiklikleri Kaydet
+                            <button type="submit" class="btn btn-warning btn-lg shadow-sm text-white">
+                                <i class="bi bi-check-lg"></i> Save Changes
                             </button>
-                            <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -251,144 +263,128 @@
     }
 
     <script>
-        // --- FOTOĞRAF SİLME FONKSİYONU (AJAX) ---
         function deletePhoto(photoId) {
-            // Confirm uyarısı kaldırıldı, direkt işlem başlıyor
-            $.ajax({
-                url: '/Properties/DeletePhoto/' + photoId,
-                type: 'POST',
-                success: function (result) {
-                    if (result.success) {
-                        // Başarılıysa fotoğrafı yavaşça kaybet ve sil
-                        $('#photo-container-' + photoId).fadeOut(300, function() { $(this).remove(); });
-                    } else {
-                        alert('Hata: ' + result.message);
+            if (confirm("Are you sure?")) {
+                $.ajax({
+                    url: '/Properties/DeletePhoto/' + photoId,
+                    type: 'POST',
+                    success: function (result) {
+                        if (result.success) { $('#photo-container-' + photoId).fadeOut(300, function() { $(this).remove(); }); }
+                        else { alert('Error deleting photo'); }
                     }
-                },
-                error: function () {
-                    alert('Bir hata oluştu. Lütfen tekrar deneyin.');
-                }
-            });
+                });
+            }
         }
 
         $(document).ready(function () {
-            // --- DEĞİŞKENLER ---
             var allData = [];
             var $citySelect = $('#citySelect');
             var $districtSelect = $('#districtSelect');
             var $neighborhoodSelect = $('#neighborhoodSelect');
-            var currentCity = '@Html.Raw(Model.City)';
-            var currentDistrict = '@Html.Raw(Model.District)';
-            var fullAddress = '@Html.Raw(Model.Address)';
+            var initialCity = $citySelect.data('selected');
+            var initialDistrict = $districtSelect.data('selected');
+            var initialNeighborhood = $neighborhoodSelect.data('selected');
 
-            // --- ADRES PARÇALAMA ---
-            var currentNeighborhood = "";
+            var fullAddress = '@Html.Raw(Model.Address)';
             var currentDetail = fullAddress;
             if (fullAddress && fullAddress.includes(" - ")) {
-                var parts = fullAddress.split(" - ");
-                if(parts.length >= 1) {
-                    currentNeighborhood = parts[0];
-                    currentDetail = fullAddress.substring(fullAddress.indexOf(" - ") + 3);
-                }
+                currentDetail = fullAddress.substring(fullAddress.indexOf(" - ") + 3);
             }
             $('#addressDetailInput').val(currentDetail);
 
-            // --- JSON YÜKLEME ---
             $.getJSON('/json/data.json', function (data) {
                 allData = Array.isArray(data) ? data : (data.data || []);
                 $.each(allData, function (index, item) {
-                    $citySelect.append($('<option>', { value: item.name, text: item.name }));
+                    if ($citySelect.find("option[value='" + item.name + "']").length === 0) {
+                        var selected = (item.name === initialCity) ? 'selected' : '';
+                        $citySelect.append(`<option value="${item.name}" ${selected}>${item.name}</option>`);
+                    }
                 });
+                if (initialCity) loadDistricts(initialCity, initialDistrict);
+            });
 
-                if (currentCity) {
-                    $citySelect.val(currentCity);
-                    var cityData = allData.find(x => x.name === currentCity);
-                    if (cityData && cityData.counties) {
-                        $.each(cityData.counties, function (index, county) {
-                            $districtSelect.append($('<option>', { value: county.name, text: county.name }));
-                        });
-                        if (currentDistrict) {
-                            $districtSelect.val(currentDistrict);
-                            var countyData = cityData.counties.find(c => c.name === currentDistrict);
-                            if (countyData && countyData.districts) {
-                                 $.each(countyData.districts, function (i, subDistrict) {
-                                    if (subDistrict.neighborhoods) {
-                                        $.each(subDistrict.neighborhoods, function (j, neighborhood) {
-                                            $neighborhoodSelect.append($('<option>', { value: neighborhood.name, text: neighborhood.name }));
-                                        });
-                                    }
-                                });
-                                if (currentNeighborhood) {
-                                    $neighborhoodSelect.val(currentNeighborhood);
-                                }
-                            }
+            function loadDistricts(cityName, selectedDist) {
+                $districtSelect.empty().append('<option value="">Select...</option>');
+                var cityData = allData.find(x => x.name === cityName);
+                if (cityData && cityData.counties) {
+                    $.each(cityData.counties, function (index, county) {
+                        var selected = (county.name === selectedDist) ? 'selected' : '';
+                        $districtSelect.append(`<option value="${county.name}" ${selected}>${county.name}</option>`);
+                    });
+                    if (selectedDist) loadNeighborhoods(cityName, selectedDist, initialNeighborhood);
+                }
+            }
+
+            function loadNeighborhoods(cityName, districtName, selectedNeigh) {
+                $neighborhoodSelect.empty().append('<option value="">Select...</option>');
+                var cityData = allData.find(x => x.name === cityName);
+                if (cityData && cityData.counties) {
+                    var countyData = cityData.counties.find(c => c.name === districtName);
+                    if (countyData) {
+                        if (countyData.neighborhoods) {
+                            $.each(countyData.neighborhoods, function (j, neighborhood) {
+                                var nName = (typeof neighborhood === 'object') ? neighborhood.name : neighborhood;
+                                var selected = (nName === selectedNeigh) ? 'selected' : '';
+                                $neighborhoodSelect.append(`<option value="${nName}" ${selected}>${nName}</option>`);
+                            });
                         }
-                    }
-                }
-            });
-
-            // --- ŞEHİR SEÇİMİ ---
-            $citySelect.change(function () {
-                var selectedCityName = $(this).val();
-                $districtSelect.empty().append('<option value="">Seçiniz...</option>');
-                $neighborhoodSelect.empty().append('<option value="">Önce İlçe Seçin...</option>');
-                if (selectedCityName) {
-                    var cityData = allData.find(x => x.name === selectedCityName);
-                    if (cityData && cityData.counties) {
-                        $.each(cityData.counties, function (index, county) {
-                            $districtSelect.append($('<option>', { value: county.name, text: county.name }));
-                        });
-                    }
-                }
-            });
-
-            // --- İLÇE SEÇİMİ ---
-            $districtSelect.change(function () {
-                var selectedCityName = $citySelect.val();
-                var selectedDistrictName = $(this).val();
-                $neighborhoodSelect.empty().append('<option value="">Seçiniz...</option>');
-                if (selectedCityName && selectedDistrictName) {
-                    var cityData = allData.find(x => x.name === selectedCityName);
-                    if (cityData && cityData.counties) {
-                        var countyData = cityData.counties.find(c => c.name === selectedDistrictName);
-                        if (countyData && countyData.districts) {
-                             $.each(countyData.districts, function (i, subDistrict) {
-                                if (subDistrict.neighborhoods) {
-                                    $.each(subDistrict.neighborhoods, function (j, neighborhood) {
-                                        $neighborhoodSelect.append($('<option>', { value: neighborhood.name, text: neighborhood.name }));
+                        if (countyData.districts) {
+                            $.each(countyData.districts, function (i, sub) {
+                                if (sub.neighborhoods) {
+                                    $.each(sub.neighborhoods, function (j, neighborhood) {
+                                        var nName = (typeof neighborhood === 'object') ? neighborhood.name : neighborhood;
+                                        var selected = (nName === selectedNeigh) ? 'selected' : '';
+                                        $neighborhoodSelect.append(`<option value="${nName}" ${selected}>${nName}</option>`);
                                     });
                                 }
                             });
                         }
                     }
                 }
+            }
+
+            $citySelect.change(function () {
+                loadDistricts($(this).val(), null);
+                $neighborhoodSelect.empty().append('<option value="">Select District First...</option>');
             });
 
-            // --- ADRES BİRLEŞTİRME ---
+            $districtSelect.change(function () {
+                loadNeighborhoods($citySelect.val(), $(this).val(), null);
+            });
+
             $('#editForm').submit(function () {
+                // Disabled alanları aç
+                $neighborhoodSelect.prop('disabled', false);
+                $districtSelect.prop('disabled', false);
+                var catText = $("#categorySelect option:selected").text().toLowerCase();
+                if (!catText.includes("land") && !catText.includes("arsa")) {
+                     $("#housingDetails select, #housingDetails input").prop('disabled', false);
+                }
+
                 var mahalle = $neighborhoodSelect.val() || "";
                 var detay = $('#addressDetailInput').val() || "";
                 var fullAddress = "";
                 if (mahalle) {
                     fullAddress += mahalle;
                     if (detay) fullAddress += " - " + detay;
-                } else {
-                    fullAddress = detay;
-                }
+                } else { fullAddress = detay; }
                 $('#finalAddressInput').val(fullAddress);
             });
 
-            // --- KATEGORİ GİZLE/GÖSTER ---
             function toggleFields() {
                 var selectedText = $("#categorySelect option:selected").text().toLowerCase();
-                if (selectedText.includes("land") || selectedText.includes("arsa") || selectedText.includes("tarla")) {
+                if (selectedText.includes("land") || selectedText.includes("arsa") || selectedText.includes("plot")) {
+                    $("#housingDetails").slideUp();
                     $("#featuresSection").slideUp();
+                    $("#housingDetails select, #housingDetails input").prop('disabled', true);
                 } else {
+                    $("#housingDetails").slideDown();
                     $("#featuresSection").slideDown();
+                    $("#housingDetails select, #housingDetails input").prop('disabled', false);
                 }
             }
             $("#categorySelect").change(toggleFields);
-            toggleFields();
+            setTimeout(toggleFields, 200);
         });
     </script>
 }

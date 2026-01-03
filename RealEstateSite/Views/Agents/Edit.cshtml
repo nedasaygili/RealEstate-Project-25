@@ -11,7 +11,7 @@
                     <h3 class="mb-0"><i class="bi bi-person-gear"></i> Edit Agent Profile</h3>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Edit" enctype="multipart/form-data">
+                    <form asp-action="Edit" enctype="multipart/form-data" id="agentForm">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="ProfileImageUrl" />
@@ -19,14 +19,14 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <div class="form-floating">
-                                    <input asp-for="FirstName" class="form-control" placeholder="First Name" required />
+                                    <input asp-for="FirstName" class="form-control track-change" placeholder="First Name" required />
                                     <label asp-for="FirstName">First Name *</label>
                                     <span asp-validation-for="FirstName" class="text-danger small"></span>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="form-floating">
-                                    <input asp-for="LastName" class="form-control" placeholder="Last Name" required />
+                                    <input asp-for="LastName" class="form-control track-change" placeholder="Last Name" required />
                                     <label asp-for="LastName">Last Name *</label>
                                     <span asp-validation-for="LastName" class="text-danger small"></span>
                                 </div>
@@ -36,14 +36,17 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <div class="form-floating">
-                                    <input asp-for="Title" class="form-control" placeholder="Title" required />
+                                    <input asp-for="Title" class="form-control track-change" placeholder="Title" required />
                                     <label asp-for="Title">Title *</label>
                                     <span asp-validation-for="Title" class="text-danger small"></span>
                                 </div>
                             </div>
+
                             <div class="col-md-6 mb-3">
                                 <div class="form-floating">
-                                    <input asp-for="PhoneNumber" class="form-control" placeholder="Phone" required />
+                                    <input asp-for="PhoneNumber" type="tel" class="form-control track-change"
+                                           placeholder="Phone" maxlength="11" required
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                                     <label asp-for="PhoneNumber">Phone Number *</label>
                                     <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                                 </div>
@@ -51,9 +54,31 @@
                         </div>
 
                         <div class="form-floating mb-3">
-                            <input asp-for="Email" type="email" class="form-control" placeholder="Email" required />
+                            <input asp-for="Email" type="email" class="form-control track-change" placeholder="Email" required />
                             <label asp-for="Email">Email Address *</label>
-                            <span asp-validation-for="Email" class="text-danger small"></span>
+                            <small class="text-muted ps-1">* Used for login.</small>
+                            <span asp-validation-for="Email" class="text-danger small d-block"></span>
+                        </div>
+
+                        <div class="mb-3 p-2 border rounded">
+                            <label class="form-label text-muted small ms-1">New Password (Leave empty to keep current)</label>
+
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input asp-for="Password" type="password" class="form-control track-change"
+                                       id="EditPasswordInput" placeholder="New Password" value=""
+                                       autocomplete="new-password" data-val="false" />
+
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('EditPasswordInput')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+
+                            <small class="text-muted mt-2 d-block ms-1">
+                                <i class="bi bi-shield-lock"></i> <strong>Rules (Only if changing):</strong>
+                                Min 8 chars, 1 Upper, 1 Number, 1 Symbol.
+                            </small>
+                            <span asp-validation-for="Password" class="text-danger small fw-bold ms-1"></span>
                         </div>
 
                         <div class="mb-3 p-3 border rounded bg-light">
@@ -74,24 +99,18 @@
                                 }
                             </div>
 
-                            <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                            <input type="file" name="photoFile" id="photoFileInput" class="form-control track-change" accept="image/*" />
                             <small class="text-muted">Upload a new photo to replace the current one.</small>
                         </div>
 
                         <div class="form-floating mb-3">
-                            <textarea asp-for="Biography" class="form-control" placeholder="Biography" style="height: 100px" required></textarea>
+                            <textarea asp-for="Biography" class="form-control track-change" placeholder="Biography" style="height: 100px" required></textarea>
                             <label asp-for="Biography">Biography *</label>
                             <span asp-validation-for="Biography" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-floating mb-3">
-                            <input asp-for="Password" type="text" class="form-control" placeholder="Password" required />
-                            <label asp-for="Password">Password *</label>
-                            <span asp-validation-for="Password" class="text-danger small"></span>
-                        </div>
-
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                            <button type="submit" id="saveButton" class="btn btn-primary btn-lg shadow-sm" disabled style="opacity: 0.6; cursor: not-allowed;">
                                 <i class="bi bi-save me-2"></i>Save Changes
                             </button>
                             <a asp-action="Index" class="btn btn-light text-muted">Cancel</a>
@@ -107,4 +126,65 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        // 1. Şifre Göster/Gizle
+        function togglePassword(inputId) {
+            var input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+
+        // 2. DIRTY CHECK (Değişiklik Kontrolü) MANTIĞI
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("agentForm");
+            const saveButton = document.getElementById("saveButton");
+            const inputs = form.querySelectorAll(".track-change");
+
+            // Başlangıç değerlerini sakla
+            const initialValues = {};
+            inputs.forEach(input => {
+                if (input.type !== "file") {
+                    initialValues[input.name] = input.value;
+                }
+            });
+
+            function checkChanges() {
+                let isChanged = false;
+
+                inputs.forEach(input => {
+                    // Şifre alanı özel kontrol: Eğer doluysa değişiklik var demektir
+                    if (input.type === "password") {
+                        if (input.value.length > 0) isChanged = true;
+                    }
+                    // Dosya yükleme kontrolü
+                    else if (input.type === "file") {
+                        if (input.files.length > 0) isChanged = true;
+                    }
+                    // Diğer text alanları: İlk değer ile şimdiki değeri kıyasla
+                    else {
+                        if (input.value !== initialValues[input.name]) isChanged = true;
+                    }
+                });
+
+                if (isChanged) {
+                    saveButton.disabled = false;
+                    saveButton.style.opacity = "1";
+                    saveButton.style.cursor = "pointer";
+                } else {
+                    saveButton.disabled = true;
+                    saveButton.style.opacity = "0.6";
+                    saveButton.style.cursor = "not-allowed";
+                }
+            }
+
+            // Her tuşa basıldığında veya seçim yapıldığında kontrol et
+            inputs.forEach(input => {
+                input.addEventListener("input", checkChanges);
+                input.addEventListener("change", checkChanges);
+            });
+        });
+    </script>
 }

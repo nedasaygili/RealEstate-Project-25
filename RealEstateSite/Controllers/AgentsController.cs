@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace RealEstateSite.Controllers
 {
@@ -27,8 +28,6 @@ namespace RealEstateSite.Controllers
         // 1. LİSTELEME
         public async Task<IActionResult> Index()
         {
-            // Sadece Aktif olanları mı görmek istersin yoksa hepsini mi?
-            // Şimdilik hepsini getiriyoruz ama View tarafında pasifleri belli edebiliriz.
             return View(await _context.Agents.ToListAsync());
         }
 
@@ -41,40 +40,48 @@ namespace RealEstateSite.Controllers
             return View(agent);
         }
 
-        // 3. EKLEME
+        // 3. EKLEME (GET)
         public IActionResult Create()
         {
             return View();
         }
 
+        // 3. EKLEME (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Agent agent, IFormFile? photoFile)
         {
-            if (string.IsNullOrEmpty(agent.Password)) agent.Password = "123456";
+            // A. Mail Kontrolü (Create)
+            bool mailVarMi = await _context.Agents.AnyAsync(x => x.Email == agent.Email);
+            if (mailVarMi)
+            {
+                ModelState.AddModelError("Email", "Bu e-posta adresi zaten sistemde kayıtlı!");
+            }
 
-            // Yeni eklenen her agent varsayılan olarak AKTİF olsun
+            // B. Şifre Kontrolü (Create)
+            if (string.IsNullOrEmpty(agent.Password))
+            {
+                ModelState.AddModelError("Password", "Lütfen bir şifre belirleyiniz.");
+            }
+            else if (!IsPasswordStrong(agent.Password))
+            {
+                ModelState.AddModelError("Password", "Şifre yeterince güçlü değil. (En az 8 karakter, 1 büyük harf, 1 sayı, 1 sembol)");
+            }
+
             agent.Status = true;
-
-            if (photoFile != null)
-            {
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + photoFile.FileName;
-                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "img", "agents");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await photoFile.CopyToAsync(fileStream);
-                }
-                agent.ProfileImageUrl = "/img/agents/" + uniqueFileName;
-            }
-            else
-            {
-                agent.ProfileImageUrl = "https://via.placeholder.com/150";
-            }
 
             if (ModelState.IsValid)
             {
+                // Resim Yükleme
+                if (photoFile != null)
+                {
+                    agent.ProfileImageUrl = await UploadFile(photoFile);
+                }
+                else
+                {
+                    agent.ProfileImageUrl = "https://via.placeholder.com/150";
+                }
+
                 _context.Add(agent);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -82,56 +89,79 @@ namespace RealEstateSite.Controllers
             return View(agent);
         }
 
-        // 4. DÜZENLEME
+        // 4. DÜZENLEME (GET)
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
             var agent = await _context.Agents.FindAsync(id);
             if (agent == null) return NotFound();
+
+            // Güvenlik: Edit ekranına şifreyi gönderme, boş gitsin.
+            agent.Password = "";
             return View(agent);
         }
 
+        // 4. DÜZENLEME (POST) - KRİTİK DÜZELTME BURADA YAPILDI
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Agent agent, IFormFile? photoFile)
         {
             if (id != agent.Id) return NotFound();
 
-            var existingAgent = await _context.Agents.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            // 1. Şifre Alanı Boşsa Hatayı Sustur (Model Validation Hatası Vermesin)
+            if (string.IsNullOrEmpty(agent.Password))
+            {
+                ModelState.Remove("Password");
+            }
 
-            // Status bilgisini form göndermiyorsa, veritabanındaki eski halini koru
-            // Veya Admin panelinde "Aktif/Pasif" checkbox'ı varsa onu kullan.
-            // Şimdilik eski durumu koruyoruz:
-            agent.Status = existingAgent.Status;
+            // 2. Email Uniqueness Kontrolü (Edit)
+            // Mantık: Bu mail adresine sahip, ID'si BEN OLMAYAN başka biri var mı?
+            bool emailIsTaken = await _context.Agents.AnyAsync(x => x.Email == agent.Email && x.Id != id);
+            if (emailIsTaken)
+            {
+                ModelState.AddModelError("Email", "Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.");
+            }
+
+            // 3. Şifre Doluysa Güçlülük Kontrolü
+            if (!string.IsNullOrEmpty(agent.Password) && !IsPasswordStrong(agent.Password))
+            {
+                ModelState.AddModelError("Password", "Yeni şifre kurallara uymuyor. (En az 8 karakter, 1 büyük harf, 1 sayı, 1 sembol)");
+            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // VERİTABANINDAN GERÇEK KAYDI ÇEKİYORUZ (Tracking Açık)
+                    var agentInDb = await _context.Agents.FindAsync(id);
+                    if (agentInDb == null) return NotFound();
+
+                    // ALANLARI GÜNCELLİYORUZ
+                    agentInDb.FirstName = agent.FirstName;
+                    agentInDb.LastName = agent.LastName;
+                    agentInDb.Title = agent.Title;
+                    agentInDb.PhoneNumber = agent.PhoneNumber;
+                    agentInDb.Email = agent.Email;
+                    agentInDb.Biography = agent.Biography;
+                    // Status veya diğer değişmemesi gereken alanlara dokunmuyoruz.
+
+                    // ŞİFRE GÜNCELLEME MANTIĞI
+                    if (!string.IsNullOrEmpty(agent.Password))
+                    {
+                        // Sadece yeni şifre girildiyse değiştir
+                        agentInDb.Password = agent.Password;
+                    }
+                    // Eğer boşsa agentInDb.Password eski haliyle kalır, dokunulmaz.
+
+                    // RESİM GÜNCELLEME
                     if (photoFile != null)
                     {
-                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + photoFile.FileName;
-                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "img", "agents");
-                        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await photoFile.CopyToAsync(fileStream);
-                        }
-                        agent.ProfileImageUrl = "/img/agents/" + uniqueFileName;
+                        agentInDb.ProfileImageUrl = await UploadFile(photoFile);
                     }
-                    else
-                    {
-                        agent.ProfileImageUrl = existingAgent.ProfileImageUrl;
-                    }
+                    // Resim seçilmediyse agentInDb.ProfileImageUrl eski haliyle kalır.
 
-                    if (string.IsNullOrEmpty(agent.Password))
-                    {
-                        agent.Password = existingAgent.Password;
-                    }
-
-                    _context.Update(agent);
-                    await _context.SaveChangesAsync();
+                    _context.Update(agentInDb); // Değişiklikleri işaretle
+                    await _context.SaveChangesAsync(); // Kaydet
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -140,19 +170,16 @@ namespace RealEstateSite.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            // Hata varsa sayfayı tekrar göster
             return View(agent);
         }
 
-        // 5. SİLME (DELETE) - GÜVENLİK GÜNCELLEMESİ
+        // 5. SİLME (DELETE)
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
-
-            // GÜVENLİK: Admin silinemez
-            if (id == 1)
-            {
-                return BadRequest("Ana Yönetici hesabı silinemez!");
-            }
+            if (id == 1) return BadRequest("Ana Yönetici hesabı silinemez!");
 
             var agent = await _context.Agents.FirstOrDefaultAsync(m => m.Id == id);
             if (agent == null) return NotFound();
@@ -164,50 +191,63 @@ namespace RealEstateSite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            // GÜVENLİK: Admin silinemez
-            if (id == 1)
-            {
-                return BadRequest("Ana Yönetici hesabı silinemez!");
-            }
+            if (id == 1) return BadRequest("Ana Yönetici hesabı silinemez!");
 
             var agent = await _context.Agents.FindAsync(id);
             if (agent != null)
             {
-                // DEĞİŞİKLİK: Veriyi tamamen silmiyoruz (Remove yok)
-                // Sadece Status'u False yapıyoruz (Soft Delete)
-                agent.Status = false;
-
-                _context.Agents.Update(agent); // Update ile durumu kaydediyoruz
+                agent.Status = false; // Soft Delete
+                _context.Agents.Update(agent);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
+
+        // YARDIMCI METODLAR
 
         private bool AgentExists(int id)
         {
             return _context.Agents.Any(e => e.Id == id);
         }
 
-        // AgentsController.cs içine eklenecek:
-
         public async Task<IActionResult> ChangeStatus(int id)
         {
-            // 1. Admin'i (ID: 1) korumaya al, ona kimse dokunamasın
             if (id == 1) return RedirectToAction(nameof(Index));
 
-            // 2. Kişiyi bul
             var agent = await _context.Agents.FindAsync(id);
             if (agent == null) return NotFound();
 
-            // 3. Durumu tersine çevir (True ise False, False ise True yap)
             agent.Status = !agent.Status;
-
-            // 4. Kaydet ve Listeye dön
             _context.Update(agent);
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
+        private bool IsPasswordStrong(string password)
+        {
+            if (string.IsNullOrEmpty(password)) return false;
+            if (password.Length < 8) return false;
+            if (!Regex.IsMatch(password, "[A-Z]")) return false;
+            if (!Regex.IsMatch(password, "[0-9]")) return false;
+            if (!Regex.IsMatch(password, "[^a-zA-Z0-9]")) return false;
+            return true;
+        }
+
+        // Kod tekrarını önlemek için resim yüklemeyi metoda aldım
+        private async Task<string> UploadFile(IFormFile photoFile)
+        {
+            string uniqueFileName = Guid.NewGuid().ToString() + "_" + photoFile.FileName;
+            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "img", "agents");
+
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await photoFile.CopyToAsync(fileStream);
+            }
+            return "/img/agents/" + uniqueFileName;
+        }
     }
 }

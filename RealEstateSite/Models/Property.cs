@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Http; // IFormFile için gerekebilir
+using Microsoft.AspNetCore.Http;
 
 namespace RealEstateSite.Models
 {
@@ -23,29 +23,29 @@ namespace RealEstateSite.Models
 
         [Display(Name = "Price")]
         [Required(ErrorMessage = "Price is required.")]
-        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid price.")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive number.")]
         [DisplayFormat(DataFormatString = "{0:N0} ₺")]
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; } // Nullable yapıldı (Kritik)
 
         [Display(Name = "Cover Photo")]
         [ValidateNever]
         public string? ImageUrl { get; set; }
 
-        // --- TECHNICAL SPECS ---
+        // --- TECHNICAL SPECS (Hepsi Soru İşaretli - Nullable) ---
 
         [Display(Name = "Net Area (m²)")]
-        [Required(ErrorMessage = "Square meters required.")]
-        public int SquareMeters { get; set; }
+        [Required(ErrorMessage = "Square meters area is required.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please enter a valid area.")]
+        public int? SquareMeters { get; set; }
 
         [Display(Name = "Room Count")]
-        [Required(ErrorMessage = "Please select room count.")]
-        public string RoomCount { get; set; }
+        public string? RoomCount { get; set; }
 
         [Display(Name = "Building Age")]
-        public int BuildingAge { get; set; }
+        public int? BuildingAge { get; set; }
 
         [Display(Name = "Heating Type")]
-        public HeatingType Heating { get; set; }
+        public HeatingType? Heating { get; set; }
 
         [Display(Name = "Is Active")]
         public bool IsActive { get; set; } = true;
@@ -61,19 +61,22 @@ namespace RealEstateSite.Models
         public string District { get; set; }
 
         [Display(Name = "Neighborhood")]
+        [Required(ErrorMessage = "Neighborhood is required.")]
         public string? Neighborhood { get; set; }
 
         [Display(Name = "Full Address")]
         [DataType(DataType.MultilineText)]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
         // --- CATEGORY & TYPE ---
 
         [Display(Name = "Listing Type")]
-        public ListingType Type { get; set; } // Sale / Rent
+        [Required(ErrorMessage = "Listing type is required.")]
+        public ListingType? Type { get; set; }
 
         [Display(Name = "Property Category")]
-        public PropertyCategory Category { get; set; } // Apartment / Villa
+        [Required(ErrorMessage = "Category is required.")]
+        public PropertyCategory? Category { get; set; }
 
         [Display(Name = "Listing Date")]
         [DataType(DataType.Date)]
@@ -82,6 +85,7 @@ namespace RealEstateSite.Models
         // --- RELATIONS ---
 
         [Display(Name = "Real Estate Agent")]
+        [Required(ErrorMessage = "Agent selection is required.")]
         public int? AgentId { get; set; }
 
         [ForeignKey("AgentId")]
@@ -96,27 +100,7 @@ namespace RealEstateSite.Models
     }
 
     // --- ENUMLAR ---
-    public enum ListingType
-    {
-        [Display(Name = "For Sale")] Sale,
-        [Display(Name = "For Rent")] Rent
-    }
-
-    public enum PropertyCategory
-    {
-        [Display(Name = "Apartment")] Apartment,
-        [Display(Name = "Villa")] Villa,
-        [Display(Name = "Office")] Office,
-        [Display(Name = "Land")] Land
-    }
-
-    public enum HeatingType
-    {
-        [Display(Name = "None")] None,
-        [Display(Name = "Stove")] Stove,
-        [Display(Name = "Natural Gas")] NaturalGas,
-        [Display(Name = "Central Heating")] Central,
-        [Display(Name = "Underfloor Heating")] Underfloor,
-        [Display(Name = "Air Conditioning")] AirConditioning
-    }
+    public enum ListingType { Sale, Rent }
+    public enum PropertyCategory { Apartment, Villa, Office, Land }
+    public enum HeatingType { None, Stove, NaturalGas, Central, Underfloor, AirConditioning }
 }

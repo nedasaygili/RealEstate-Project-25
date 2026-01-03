@@ -20,18 +20,25 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted">First Name</label>
                                 <input asp-for="FirstName" class="form-control" placeholder="John" required />
+                                <span asp-validation-for="FirstName" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted">Last Name</label>
                                 <input asp-for="LastName" class="form-control" placeholder="Doe" required />
+                                <span asp-validation-for="LastName" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted">Title (Position)</label>
-                                <input asp-for="Title" class="form-control" placeholder="e.g. Senior Broker" />
+                                <input asp-for="Title" class="form-control" placeholder="e.g. Senior Broker" required />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted">Phone Number</label>
-                                <input asp-for="PhoneNumber" class="form-control" placeholder="+90 555..." />
+                                <input asp-for="PhoneNumber" type="tel" class="form-control"
+                                       placeholder="05xxxxxxxxx" maxlength="11" required
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                             </div>
                         </div>
 
@@ -43,15 +50,31 @@
                                     <span class="input-group-text"><i class="fa fa-envelope"></i></span>
                                     <input asp-for="Email" type="email" class="form-control" placeholder="agent@unea.com" required />
                                 </div>
-                                <small class="text-danger">* This will be used for login.</small>
+                                <small class="text-muted">* This will be used for login.</small>
+                                <span asp-validation-for="Email" class="text-danger d-block"></span>
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted">Password</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fa fa-lock"></i></span>
-                                    <input asp-for="Password" type="text" class="form-control" value="123456" />
+                                    <input asp-for="Password" type="password" class="form-control" id="CreatePasswordInput" placeholder="Create a strong password..." required />
+
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('CreatePasswordInput')">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
                                 </div>
-                                <small class="text-muted">Default is 123456. You can change it.</small>
+
+                                <div class="text-muted small mt-2" style="font-size: 0.85rem;">
+                                    <strong><i class="fa fa-info-circle"></i> Password Rules:</strong>
+                                    <ul class="mb-0 ps-3">
+                                        <li>Min 8 characters</li>
+                                        <li>At least 1 Uppercase (A-Z)</li>
+                                        <li>At least 1 Number (0-9)</li>
+                                        <li>At least 1 Symbol (!.+*)</li>
+                                    </ul>
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger fw-bold"></span>
                             </div>
                         </div>
 
@@ -63,7 +86,8 @@
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-bold small text-muted">Biography</label>
-                                <textarea asp-for="Biography" class="form-control" rows="3" placeholder="Short bio..."></textarea>
+                                <textarea asp-for="Biography" class="form-control" rows="3" placeholder="Short bio..." required></textarea>
+                                <span asp-validation-for="Biography" class="text-danger small"></span>
                             </div>
                         </div>
 
@@ -71,7 +95,7 @@
                             <button type="submit" class="btn btn-success py-3 fw-bold fs-5 shadow-sm">
                                 <i class="fa fa-save me-2"></i> SAVE & CREATE AGENT
                             </button>
-                            <a href="/" class="btn btn-light text-muted">Cancel</a>
+                            <a asp-action="Index" class="btn btn-light text-muted">Cancel</a>
                         </div>
                     </form>
 
@@ -80,3 +104,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    function togglePassword(inputId) {
+        var input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+        } else {
+            input.type = "password";
+        }
+    }
+</script>
