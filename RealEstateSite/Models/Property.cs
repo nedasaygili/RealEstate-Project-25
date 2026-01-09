@@ -85,7 +85,6 @@ namespace RealEstateSite.Models
         // --- RELATIONS ---
 
         [Display(Name = "Real Estate Agent")]
-        [Required(ErrorMessage = "Agent selection is required.")]
         public int? AgentId { get; set; }
 
         [ForeignKey("AgentId")]

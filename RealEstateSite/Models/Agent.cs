@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic; // List ve ICollection için bu kütüphane şart
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RealEstateSite.Models
@@ -33,7 +34,6 @@ namespace RealEstateSite.Models
         public string? ProfileImageUrl { get; set; }
 
         // Formda dosya yükleme (IFormFile) için gerekli alan
-        // Eğer Controller'da bu ismi kullanıyorsan (ImageFile) modelde olması gerekir.
         [NotMapped]
         [Display(Name = "Upload Photo")]
         public Microsoft.AspNetCore.Http.IFormFile? ImageFile { get; set; }
@@ -53,5 +53,9 @@ namespace RealEstateSite.Models
         public string FullName => $"{FirstName} {LastName}";
 
         public bool Status { get; set; } = true;
+
+        // *** EKLENEN KISIM: Controller hatasını çözen satır ***
+        // Bir emlakçının birden fazla ilanı olabilir.
+        public virtual ICollection<Property>? Properties { get; set; }
     }
 }
